@@ -10,8 +10,8 @@ This document tracks the verified completion of each phase in accordance with th
 | **Phase 2: OpenRouter Connection** | BLOCKED | 2026-10-09 | dd19b0e | - | Live OpenRouter verification | Centralized AIProvider, error taxonomy, timeouts, and mocked unit/integration tests passed (25/25). Awaiting OPENROUTER_API_KEY for live gate. |
 | **Phase 3: Database & Conversation Ingestion** | PASSED | 2026-10-09 | 35a094b | Repositories, segmentation, consent enforcement, seeding | - | Full schema, org_id tenant isolation, stable segment IDs, idempotent seed. |
 | **Phase 4: Speech-to-Text** | PASSED | 2026-10-09 | a306afc | Audio ingestion, Mock & Whisper STT, versioned edit, right to erasure | Live Whisper API (gated) | Consent required, content validation, size limits, Hinglish evaluation documented. |
-| **Phase 5: Retail Knowledge Retrieval (RAG)** | IN PROGRESS | 2026-10-09 | - | - | - | Ingestion, chunking, pgvector semantic search, seeded catalogue, deliberate gaps. |
-| **Phase 6: FloorCoach Agent** | NOT STARTED | - | - | - | - | Sales coach prompts, grounding guards, source citations, abstention on gaps. |
+| **Phase 5: Retail Knowledge Retrieval (RAG)** | PASSED | 2026-10-09 | da5232e | Structure-aware chunking, semantic retrieval, deliberate gaps | - | High retrieval hit-rate, traceable sources, abstention on gaps verified. |
+| **Phase 6: FloorCoach Agent** | IN PROGRESS | 2026-10-09 | - | - | - | Sales coach prompts, grounding guards, source citations, abstention on gaps. |
 | **Phase 7: SignalAnalyst Agent & Scoring** | NOT STARTED | - | - | - | - | Shopper intelligence, explicit vs inferred, deterministic intent rubric engine. |
 | **Phase 8: FollowUpOptimizer Agent** | NOT STARTED | - | - | - | - | Draft generation, grounding guards, human approval gate, zero auto-send. |
 | **Phase 9: Multi-Agent Orchestration** | NOT STARTED | - | - | - | - | State machine, parallel execution, retries, idempotency, event tracing. |
