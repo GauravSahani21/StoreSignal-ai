@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import type { Repositories } from '../database/repositories/index.js';
 import { ShopperProfileService } from '../shoppers/ShopperProfileService.js';
-import { ValidationError } from '../errors/AppError.js';
+import { ForbiddenError, ValidationError } from '../errors/AppError.js';
 
 const ResolveShopperBodySchema = z.object({
   orgId: z.string().optional(),
@@ -186,13 +186,17 @@ export const shopperRoutes: FastifyPluginAsync<{
 
   // 7. Deletion cascade (Right to Erasure)
   fastify.delete('/api/shoppers/:id', async (request, reply) => {
+    const callerRole = (request as any).auth?.role;
+    if (callerRole && callerRole !== 'admin') {
+      throw new ForbiddenError("Right to erasure deletion requests require 'admin' role.");
+    }
     const { id: shopperId } = request.params as { id: string };
     const parseResult = DeleteShopperBodySchema.safeParse(request.body || {});
     if (!parseResult.success) {
       throw new ValidationError(`Invalid delete shopper payload: ${JSON.stringify(parseResult.error.format())}`);
     }
 
-    const orgId = parseResult.data.orgId || 'org-vayu-motors-dev';
+    const orgId = parseResult.data.orgId || (request as any).auth?.orgId || 'org-vayu-motors-dev';
     await service.deleteShopperAndDerivedData(orgId, shopperId, parseResult.data.actor);
 
     return reply.status(200).send({

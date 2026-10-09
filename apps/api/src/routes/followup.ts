@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { FOLLOWUP_PROMPT_VERSION } from '../agents/followup/prompts.js';
 import { FollowUpOptimizerAgent } from '../agents/followup/FollowUpOptimizerAgent.js';
 import type { Repositories } from '../database/repositories/index.js';
-import { NotFoundError, ValidationError } from '../errors/AppError.js';
+import { ForbiddenError, NotFoundError, ValidationError } from '../errors/AppError.js';
 import type { AIProvider } from '../providers/ai/types.js';
 import type { SignalAnalystOutput } from '../agents/signalanalyst/schema.js';
 import type { FloorCoachOutput } from '../agents/floorcoach/schema.js';
@@ -181,11 +181,15 @@ export const followUpRoutes: FastifyPluginAsync<FollowUpRoutesOptions> = async (
 
   // 5. Approve draft (Governance Gate: human approval recorded, NO AUTOMATED SEND)
   fastify.post('/api/drafts/:id/approve', async (request, reply) => {
+    const callerRole = (request as any).auth?.role;
+    if (callerRole === 'advisor') {
+      throw new ForbiddenError("Advisors cannot approve drafts. Manager or admin approval required.");
+    }
     const orgId = (request as { orgId?: string }).orgId || 'org-vayu-motors-dev';
     const { id } = request.params as { id: string };
     const body = (request.body as { reviewerId?: string; reviewerNotes?: string }) || {};
 
-    const reviewerId = body.reviewerId || 'user-advisor-1';
+    const reviewerId = (request as any).auth?.userId || body.reviewerId || 'user-advisor-1';
 
     const { draft, approvalRecord } = await repositories.drafts.recordApproval({
       orgId,
@@ -216,11 +220,15 @@ export const followUpRoutes: FastifyPluginAsync<FollowUpRoutesOptions> = async (
 
   // 6. Reject draft
   fastify.post('/api/drafts/:id/reject', async (request, reply) => {
+    const callerRole = (request as any).auth?.role;
+    if (callerRole === 'advisor') {
+      throw new ForbiddenError("Advisors cannot reject drafts. Manager or admin authorization required.");
+    }
     const orgId = (request as { orgId?: string }).orgId || 'org-vayu-motors-dev';
     const { id } = request.params as { id: string };
     const body = (request.body as { reviewerId?: string; reviewerNotes?: string }) || {};
 
-    const reviewerId = body.reviewerId || 'user-advisor-1';
+    const reviewerId = (request as any).auth?.userId || body.reviewerId || 'user-advisor-1';
 
     const { draft, approvalRecord } = await repositories.drafts.recordApproval({
       orgId,

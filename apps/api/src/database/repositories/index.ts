@@ -50,6 +50,10 @@ import {
   type IExperimentRepository,
   MemoryExperimentRepository,
 } from './ExperimentRepository.js';
+import {
+  type IUserRepository,
+  MemoryUserRepository,
+} from './UserRepository.js';
 
 export interface Repositories {
   conversations: IConversationRepository;
@@ -65,6 +69,7 @@ export interface Repositories {
   auditLogs: IAuditLogRepository;
   usageEvents: IUsageEventRepository;
   experiments: IExperimentRepository;
+  users: IUserRepository;
 }
 
 export function createRepositories(): Repositories {
@@ -82,6 +87,7 @@ export function createRepositories(): Repositories {
     auditLogs: new MemoryAuditLogRepository(),
     usageEvents: new MemoryUsageEventRepository(),
     experiments: new MemoryExperimentRepository(),
+    users: new MemoryUserRepository(),
   };
 }
 
@@ -99,3 +105,4 @@ export * from './StoreEventRepository.js';
 export * from './AuditLogRepository.js';
 export * from './UsageEventRepository.js';
 export * from './ExperimentRepository.js';
+export * from './UserRepository.js';

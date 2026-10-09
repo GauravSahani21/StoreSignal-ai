@@ -28,6 +28,8 @@ import { orchestrationRoutes } from './routes/orchestration.js';
 import { shopperRoutes } from './routes/shoppers.js';
 import { analyticsRoutes } from './routes/analytics.js';
 import { experimentRoutes } from './routes/experiments.js';
+import { authRoutes } from './routes/auth.js';
+import { AuthService } from './auth/AuthService.js';
 
 export interface AppOptions {
   env?: EnvConfig;
@@ -38,6 +40,7 @@ export interface AppOptions {
   knowledgeStore?: KnowledgeStore;
   retrievalService?: RetrievalService;
   repositories?: Repositories;
+  authService?: AuthService;
   skipAutoSeed?: boolean;
 }
 
@@ -102,19 +105,46 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   // Centralized error handler
   app.setErrorHandler(errorHandler);
 
-  // Tenant context middleware (org_id extraction)
-  app.decorateRequest('orgId', '');
-  app.addHook('preHandler', async (request) => {
-    const orgHeader = request.headers['x-org-id'];
-    if (typeof orgHeader === 'string' && orgHeader.trim()) {
-      (request as unknown as { orgId: string }).orgId = orgHeader.trim();
-    } else {
-      (request as unknown as { orgId: string }).orgId = 'org-vayu-motors-dev';
-    }
-  });
-
   // Initialize Repositories
   const repositories = options.repositories ?? createRepositories();
+
+  // Initialize AuthService
+  const authService = options.authService ?? new AuthService(repositories);
+
+  // Tenant & Auth context middleware (token and org_id extraction)
+  app.decorateRequest('orgId', '');
+  app.decorateRequest('auth', undefined);
+  app.addHook('preHandler', async (request) => {
+    // 1. Check Bearer Token
+    const authHeader = request.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7).trim();
+      const payload = authService.verifyAccessToken(token);
+      if (payload) {
+        request.auth = payload;
+        request.orgId = payload.orgId;
+        return;
+      }
+    }
+
+    // 2. Dev context fallback
+    const orgHeader = request.headers['x-org-id'];
+    const roleHeader = request.headers['x-user-role'] as any;
+    if (typeof orgHeader === 'string' && orgHeader.trim()) {
+      request.orgId = orgHeader.trim();
+      if (roleHeader) {
+        request.auth = {
+          userId: (request.headers['x-user-id'] as string) || 'usr-dev-anon',
+          orgId: orgHeader.trim(),
+          role: roleHeader,
+          email: 'dev@storesignal.ai',
+          exp: Math.floor(Date.now() / 1000) + 3600,
+        };
+      }
+    } else {
+      request.orgId = 'org-vayu-motors-dev';
+    }
+  });
 
   // Initialize AI Provider
   const aiProvider =
@@ -181,6 +211,11 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   await app.register(experimentRoutes, {
     prefix: '/api/experiments',
     repositories,
+  });
+  await app.register(authRoutes, {
+    prefix: '/api/auth',
+    repositories,
+    authService,
   });
 
   return app;
