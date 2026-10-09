@@ -14,7 +14,7 @@ This document tracks the verified completion of each phase in accordance with th
 | **Phase 6: FloorCoach Agent** | PASSED | 2026-10-09 | 611cc8e | Grounding guards, RAG citations, gap abstention, repair loop | Live OpenRouter (gated) | Grounding guards enforced in code; unverified gaps move to unresolved without invented numbers. |
 | **Phase 7: SignalAnalyst Agent & Scoring** | PASSED | 2026-10-09 | HEAD | SignalAnalyst extraction, explicit basis guard, deterministic IntentScorer, rubric v1.0.0 | Live OpenRouter (gated) | Separation of LLM extraction and deterministic code scoring, customer volume abstention. |
 | **Phase 8: FollowUpOptimizer Agent** | PASSED | 2026-10-09 | HEAD | Grounded drafts, factsUsed grounding, consent gating, draft state machine, zero auto-send | Live OpenRouter (gated) | Human approval mandatory, zero outbound messaging clients, immutable approval audits. |
-| **Phase 9: Multi-Agent Orchestration** | NOT STARTED | - | - | - | - | State machine, parallel execution, retries, idempotency, event tracing. |
+| **Phase 9: Multi-Agent Orchestration** | PASSED | 2026-10-09 | HEAD | Single entry point, parallel execution, partial failure semantics, idempotency, tracing | Live OpenRouter (gated) | Full state machine PENDING->RETRIEVING->ANALYZING->FOLLOWUP->AWAITING_APPROVAL/COMPLETED. |
 | **Phase 10: Unified Shopper Profile** | NOT STARTED | - | - | - | - | Cross-visit continuity, permitted identifiers, deletion/retention, outcome tracking. |
 | **Phase 11: Retail Analytics Dashboard** | NOT STARTED | - | - | - | - | Real data views, conversation workspace, metrics aggregation, DEMO badging. |
 | **Phase 12: AI Evaluation Harness** | NOT STARTED | - | - | - | - | Golden dataset (≥20 transcripts), accuracy, abstention, latency, cost metrics. |
@@ -34,6 +34,7 @@ This document tracks the verified completion of each phase in accordance with th
 - [ADR 006: FloorCoach Agent Architecture and Post-Validation Grounding Guards](adr/006-floorcoach-agent-and-grounding-guards.md)
 - [ADR 007: SignalAnalyst Agent and Deterministic Intent Scoring Engine](adr/007-signalanalyst-and-deterministic-intent-scoring.md)
 - [ADR 008: FollowUpOptimizer Agent and Governed Approval Queue Architecture](adr/008-followup-optimizer-and-governed-approval-queue.md)
+- [ADR 009: Multi-Agent Orchestration Engine and Lifecycle State Machine](adr/009-multi-agent-orchestration-and-lifecycle-state-machine.md)
 
 ---
 

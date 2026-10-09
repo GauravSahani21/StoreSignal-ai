@@ -21,6 +21,9 @@ import {
   Upload,
   UserCheck,
   X,
+  Cpu,
+  Layers,
+  RefreshCw,
 } from 'lucide-react';
 
 interface HealthStatus {
@@ -70,6 +73,27 @@ interface FollowUpDraft {
   updatedAt: string;
 }
 
+interface WorkflowEventItem {
+  id: string;
+  eventType: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
+}
+
+interface WorkflowRunData {
+  id: string;
+  version: number;
+  state: string;
+  durationMs: number;
+  stepResults: Record<string, {
+    state: string;
+    durationMs?: number;
+    error?: string;
+    skipReason?: string;
+    output?: unknown;
+  }>;
+}
+
 export const App: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -89,6 +113,11 @@ export const App: React.FC = () => {
   const [editSubject, setEditSubject] = useState('');
   const [editMessage, setEditMessage] = useState('');
   const [reviewerNotes, setReviewerNotes] = useState('');
+
+  // Workflow Orchestration State
+  const [activeWorkflow, setActiveWorkflow] = useState<WorkflowRunData | null>(null);
+  const [workflowEvents, setWorkflowEvents] = useState<WorkflowEventItem[]>([]);
+  const [isProcessingWorkflow, setIsProcessingWorkflow] = useState(false);
 
   // Timer for active recording simulation
   useEffect(() => {
@@ -242,6 +271,51 @@ export const App: React.FC = () => {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setStatusMessage(`Rejection error: ${message}`);
+    }
+  };
+
+  const handleRunWorkflow = async () => {
+    if (!ingestedConversation) return;
+    setIsProcessingWorkflow(true);
+    setStatusMessage(null);
+    try {
+      const res = await fetch(`http://localhost:3001/api/conversations/${ingestedConversation.conversation.id}/process`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          permittedChannels: ['whatsapp', 'email'],
+          forceReRun: true,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || 'Workflow execution failed');
+      }
+
+      const data = await res.json();
+      setActiveWorkflow(data.workflowRun);
+
+      // Fetch trace events
+      const traceRes = await fetch(`http://localhost:3001/api/conversations/${ingestedConversation.conversation.id}/trace`);
+      if (traceRes.ok) {
+        const traceData = await traceRes.json();
+        setWorkflowEvents(traceData.events || []);
+      }
+
+      // Fetch follow-up drafts
+      const draftsRes = await fetch(`http://localhost:3001/api/conversations/${ingestedConversation.conversation.id}/drafts`);
+      if (draftsRes.ok) {
+        const draftsData = await draftsRes.json();
+        setDrafts(draftsData.drafts || []);
+      }
+
+      setStatusMessage(`Multi-agent workflow completed: State ${data.workflowRun.state} (${data.workflowRun.durationMs}ms).`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      setStatusMessage(`Workflow error: ${message}`);
+    } finally {
+      setIsProcessingWorkflow(false);
     }
   };
 
@@ -417,6 +491,162 @@ export const App: React.FC = () => {
 
           {/* Right Column: Follow-Up Drafts Queue & Addressable Segments */}
           <div className="lg:col-span-7 space-y-6">
+            {/* Multi-Agent Orchestration & Trace Card */}
+            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-indigo-400" />
+                    Multi-Agent Orchestration &amp; Tracing
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Governed dependency graph: Retrieval → (Coach ∥ Analyst) → FollowUp Planning.
+                  </p>
+                </div>
+
+                {ingestedConversation && (
+                  <button
+                    onClick={handleRunWorkflow}
+                    disabled={isProcessingWorkflow}
+                    className="py-1.5 px-3 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white shadow transition flex items-center gap-1.5"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isProcessingWorkflow ? 'animate-spin' : ''}`} />
+                    {isProcessingWorkflow ? 'Orchestrating...' : 'Execute Governed Workflow'}
+                  </button>
+                )}
+              </div>
+
+              {activeWorkflow ? (
+                <div className="space-y-3">
+                  {/* Pipeline Step Progression */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 text-xs">
+                    {/* Step 1: Retrieval */}
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-slate-300">1. Retrieval</span>
+                        <span className="text-emerald-400 font-mono text-[10px]">
+                          {activeWorkflow.stepResults['retrieval']?.state || 'PENDING'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        {activeWorkflow.stepResults['retrieval']?.durationMs ?? 0}ms
+                      </div>
+                    </div>
+
+                    {/* Step 2: FloorCoach */}
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-slate-300">2. FloorCoach</span>
+                        <span
+                          className={`font-mono text-[10px] ${
+                            activeWorkflow.stepResults['floor_coach']?.state === 'SUCCEEDED'
+                              ? 'text-emerald-400'
+                              : 'text-amber-400'
+                          }`}
+                        >
+                          {activeWorkflow.stepResults['floor_coach']?.state || 'PENDING'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        {activeWorkflow.stepResults['floor_coach']?.durationMs ?? 0}ms
+                      </div>
+                    </div>
+
+                    {/* Step 3: SignalAnalyst */}
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-slate-300">3. SignalAnalyst</span>
+                        <span
+                          className={`font-mono text-[10px] ${
+                            activeWorkflow.stepResults['signal_analyst']?.state === 'SUCCEEDED'
+                              ? 'text-emerald-400'
+                              : 'text-amber-400'
+                          }`}
+                        >
+                          {activeWorkflow.stepResults['signal_analyst']?.state || 'PENDING'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        {activeWorkflow.stepResults['signal_analyst']?.durationMs ?? 0}ms
+                      </div>
+                    </div>
+
+                    {/* Step 4: FollowUpOptimizer */}
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold text-slate-300">4. FollowUp</span>
+                        <span
+                          className={`font-mono text-[10px] ${
+                            activeWorkflow.stepResults['followup_optimizer']?.state === 'SUCCEEDED'
+                              ? 'text-emerald-400'
+                              : activeWorkflow.stepResults['followup_optimizer']?.state === 'SKIPPED'
+                                ? 'text-slate-400'
+                                : 'text-amber-400'
+                          }`}
+                        >
+                          {activeWorkflow.stepResults['followup_optimizer']?.state || 'PENDING'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        {activeWorkflow.stepResults['followup_optimizer']?.durationMs ?? 0}ms
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary Bar */}
+                  <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/60 flex items-center justify-between text-xs font-mono">
+                    <span className="text-slate-300">
+                      Workflow ID: <span className="text-indigo-400">{activeWorkflow.id}</span>
+                    </span>
+                    <span className="text-slate-400">Total Duration: {activeWorkflow.durationMs}ms</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
+                        activeWorkflow.state === 'COMPLETED'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          : activeWorkflow.state === 'AWAITING_APPROVAL'
+                            ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                            : activeWorkflow.state === 'PARTIAL'
+                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                      }`}
+                    >
+                      {activeWorkflow.state}
+                    </span>
+                  </div>
+
+                  {/* Trace Event Log */}
+                  {workflowEvents.length > 0 && (
+                    <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                        Execution Trace Events:
+                      </div>
+                      <div className="max-h-36 overflow-y-auto space-y-1 pr-1 font-mono text-[11px]">
+                        {workflowEvents.map((evt) => (
+                          <div
+                            key={evt.id}
+                            className="p-1.5 rounded bg-slate-950 border border-slate-850 flex items-center justify-between text-slate-300"
+                          >
+                            <span className="text-indigo-400">{evt.eventType}</span>
+                            <span className="text-[10px] text-slate-500">
+                              {new Date(evt.createdAt).toLocaleTimeString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center space-y-2">
+                  <Cpu className="w-7 h-7 text-slate-600 mx-auto" />
+                  <p className="text-xs text-slate-400">
+                    No active workflow run executed yet. Click &quot;Execute Governed Workflow&quot; to coordinate
+                    Retrieval, FloorCoach, SignalAnalyst, and FollowUpOptimizer.
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Follow-Up Governance Queue Card */}
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
               <div className="flex items-center justify-between">

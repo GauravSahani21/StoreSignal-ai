@@ -120,3 +120,42 @@ export interface WorkflowEvent {
   payload: Record<string, unknown>;
   createdAt: string;
 }
+
+export type WorkflowState =
+  | 'PENDING'
+  | 'RETRIEVING'
+  | 'ANALYZING'
+  | 'FOLLOWUP_PLANNING'
+  | 'AWAITING_APPROVAL'
+  | 'COMPLETED'
+  | 'PARTIAL'
+  | 'FAILED';
+
+export type StepState =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'SKIPPED'
+  | 'TIMED_OUT';
+
+export interface WorkflowRun {
+  id: string;
+  orgId: string;
+  conversationId: string;
+  idempotencyKey: string;
+  version: number;
+  state: WorkflowState;
+  stepResults: Record<string, {
+    state: StepState;
+    durationMs?: number;
+    error?: string;
+    skipReason?: string;
+    output?: unknown;
+  }>;
+  resultSummary: Record<string, unknown>;
+  errorDetail?: string | null;
+  durationMs: number;
+  createdAt: string;
+  updatedAt: string;
+}
