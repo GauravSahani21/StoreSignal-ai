@@ -14,6 +14,14 @@ export const EnvSchema = z.object({
   OPENROUTER_MODEL: z.string().default('google/gemini-2.0-flash-001'),
   OPENROUTER_FALLBACK_MODEL: z.string().optional(),
   OPENROUTER_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
+
+  // Phase 4: Speech-to-Text Configuration
+  STT_PROVIDER: z.enum(['whisper', 'mock']).default('mock'),
+  STT_API_KEY: z.string().optional(),
+  STT_DEFAULT_LANGUAGE: z.string().default('en'),
+  AUDIO_MAX_BYTES: z.coerce.number().int().default(26214400), // 25MB
+  AUDIO_MAX_SECONDS: z.coerce.number().int().default(600), // 10 minutes
+  UPLOAD_DIR: z.string().default('uploads'),
 });
 
 export type EnvConfig = z.infer<typeof EnvSchema>;
@@ -22,7 +30,6 @@ export class EnvValidationError extends Error {
   public readonly missingOrInvalidFields: string[];
 
   constructor(issues: z.ZodIssue[]) {
-    // Only output field names, never raw values or credential fragments
     const fields = issues.map((issue) => issue.path.join('.')).filter(Boolean);
     const uniqueFields = Array.from(new Set(fields));
     super(

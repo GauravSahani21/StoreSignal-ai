@@ -160,3 +160,50 @@ export class AgentOutputInvalidError extends AppError {
     super(message);
   }
 }
+
+// --- Phase 4 STT Error Taxonomy ---
+
+export class STTUnsupportedFormatError extends AppError {
+  readonly code = 'STT_UNSUPPORTED_FORMAT';
+  readonly statusCode = 400;
+
+  constructor(message = 'Uploaded audio format is not supported.') {
+    super(message);
+  }
+}
+
+export class STTTooLargeError extends AppError {
+  readonly code = 'STT_TOO_LARGE';
+  readonly statusCode = 413;
+
+  constructor(message = 'Audio file exceeds the maximum allowed size or duration limit.') {
+    super(message);
+  }
+}
+
+export class STTEmptyError extends AppError {
+  readonly code = 'STT_EMPTY';
+  readonly statusCode = 422;
+
+  constructor(message = 'The audio recording was empty or contained no audible speech.') {
+    super(message);
+  }
+}
+
+export class STTTimeoutError extends AppError {
+  readonly code = 'STT_TIMEOUT';
+  readonly statusCode = 504;
+
+  constructor(message = 'Speech-to-text transcription service timed out.') {
+    super(message);
+  }
+}
+
+export class STTProviderError extends AppError {
+  readonly code = 'STT_PROVIDER_ERROR';
+  readonly statusCode = 502;
+
+  constructor(message = 'Upstream speech-to-text service error.') {
+    super(message);
+  }
+}

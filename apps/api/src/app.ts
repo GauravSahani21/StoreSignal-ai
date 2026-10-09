@@ -2,12 +2,16 @@ import crypto from 'node:crypto';
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import multipart from '@fastify/multipart';
 import { type EnvConfig, loadEnv } from './config/env.js';
 import { createRepositories, type Repositories } from './database/repositories/index.js';
 import { errorHandler } from './errors/errorHandler.js';
 import { OpenRouterProvider } from './providers/ai/openrouter/OpenRouterProvider.js';
 import type { AIProvider } from './providers/ai/types.js';
+import { getSTTProvider } from './providers/stt/index.js';
+import type { STTProvider } from './providers/stt/types.js';
 import { aiRoutes } from './routes/ai.js';
+import { audioRoutes } from './routes/audio.js';
 import { consentRoutes } from './routes/consents.js';
 import { conversationRoutes } from './routes/conversations.js';
 import { healthRoutes } from './routes/health.js';
@@ -16,6 +20,7 @@ export interface AppOptions {
   env?: EnvConfig;
   logger?: FastifyServerOptions['logger'];
   aiProvider?: AIProvider;
+  sttProvider?: STTProvider;
   repositories?: Repositories;
 }
 
@@ -39,6 +44,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
               '*.password',
               '*.secret',
               'OPENROUTER_API_KEY',
+              'STT_API_KEY',
             ],
             censor: '[REDACTED]',
           },
@@ -53,7 +59,15 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       }
       return `req-${crypto.randomUUID()}`;
     },
-    bodyLimit: 1048576, // 1MB default body limit
+    bodyLimit: 31457280, // 30MB limit for audio uploads
+  });
+
+  // Register Multipart for audio streaming
+  await app.register(multipart, {
+    limits: {
+      fileSize: env.AUDIO_MAX_BYTES,
+      files: 1,
+    },
   });
 
   // Security headers via Helmet
@@ -96,11 +110,19 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       timeoutMs: env.OPENROUTER_TIMEOUT_MS,
     });
 
+  // Initialize STT Provider
+  const sttProvider = getSTTProvider(env, options.sttProvider);
+
   // Register routes
   await app.register(healthRoutes);
   await app.register(aiRoutes, { aiProvider });
   await app.register(consentRoutes, { repositories });
   await app.register(conversationRoutes, { repositories });
+  await app.register(audioRoutes, {
+    repositories,
+    sttProvider,
+    audioMaxBytes: env.AUDIO_MAX_BYTES,
+  });
 
   return app;
 }
