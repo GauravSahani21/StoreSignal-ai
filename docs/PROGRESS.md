@@ -12,7 +12,7 @@ This document tracks the verified completion of each phase in accordance with th
 | **Phase 4: Speech-to-Text** | PASSED | 2026-10-09 | a306afc | Audio ingestion, Mock & Whisper STT, versioned edit, right to erasure | Live Whisper API (gated) | Consent required, content validation, size limits, Hinglish evaluation documented. |
 | **Phase 5: Retail Knowledge Retrieval (RAG)** | PASSED | 2026-10-09 | da5232e | Structure-aware chunking, semantic retrieval, deliberate gaps | - | High retrieval hit-rate, traceable sources, abstention on gaps verified. |
 | **Phase 6: FloorCoach Agent** | PASSED | 2026-10-09 | 611cc8e | Grounding guards, RAG citations, gap abstention, repair loop | Live OpenRouter (gated) | Grounding guards enforced in code; unverified gaps move to unresolved without invented numbers. |
-| **Phase 7: SignalAnalyst Agent & Scoring** | IN PROGRESS | 2026-10-09 | - | - | - | Shopper intelligence, explicit vs inferred, deterministic intent rubric engine. |
+| **Phase 7: SignalAnalyst Agent & Scoring** | PASSED | 2026-10-09 | HEAD | SignalAnalyst extraction, explicit basis guard, deterministic IntentScorer, rubric v1.0.0 | Live OpenRouter (gated) | Separation of LLM extraction and deterministic code scoring, customer volume abstention. |
 | **Phase 8: FollowUpOptimizer Agent** | NOT STARTED | - | - | - | - | Draft generation, grounding guards, human approval gate, zero auto-send. |
 | **Phase 9: Multi-Agent Orchestration** | NOT STARTED | - | - | - | - | State machine, parallel execution, retries, idempotency, event tracing. |
 | **Phase 10: Unified Shopper Profile** | NOT STARTED | - | - | - | - | Cross-visit continuity, permitted identifiers, deletion/retention, outcome tracking. |
@@ -28,6 +28,11 @@ This document tracks the verified completion of each phase in accordance with th
 
 - [ADR 001: Monorepo Structure and Technology Foundation](adr/001-project-foundation.md)
 - [ADR 002: Centralized OpenRouter LLM Gateway and Error Taxonomy](adr/002-openrouter-llm-gateway.md)
+- [ADR 003: Database Schema, Multi-Tenancy, and Ingestion Pipeline](adr/003-database-conversation-ingestion.md)
+- [ADR 004: Speech-to-Text Provider Architecture](adr/004-stt-provider-architecture.md)
+- [ADR 005: Retail Knowledge Retrieval Architecture](adr/005-retail-knowledge-rag.md)
+- [ADR 006: FloorCoach Agent Architecture and Post-Validation Grounding Guards](adr/006-floorcoach-agent-and-grounding-guards.md)
+- [ADR 007: SignalAnalyst Agent and Deterministic Intent Scoring Engine](adr/007-signalanalyst-and-deterministic-intent-scoring.md)
 
 ---
 
