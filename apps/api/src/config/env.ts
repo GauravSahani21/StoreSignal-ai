@@ -8,6 +8,12 @@ export const EnvSchema = z.object({
     .string()
     .min(1, 'DATABASE_URL is required')
     .default('postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev'),
+
+  // Phase 2: OpenRouter Gateway Configuration
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_MODEL: z.string().default('google/gemini-2.0-flash-001'),
+  OPENROUTER_FALLBACK_MODEL: z.string().optional(),
+  OPENROUTER_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
 });
 
 export type EnvConfig = z.infer<typeof EnvSchema>;

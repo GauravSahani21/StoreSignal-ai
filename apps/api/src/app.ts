@@ -4,11 +4,15 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import { type EnvConfig, loadEnv } from './config/env.js';
 import { errorHandler } from './errors/errorHandler.js';
+import { OpenRouterProvider } from './providers/ai/openrouter/OpenRouterProvider.js';
+import type { AIProvider } from './providers/ai/types.js';
+import { aiRoutes } from './routes/ai.js';
 import { healthRoutes } from './routes/health.js';
 
 export interface AppOptions {
   env?: EnvConfig;
   logger?: FastifyServerOptions['logger'];
+  aiProvider?: AIProvider;
 }
 
 export async function buildApp(options: AppOptions = {}): Promise<FastifyInstance> {
@@ -30,6 +34,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
               '*.token',
               '*.password',
               '*.secret',
+              'OPENROUTER_API_KEY',
             ],
             censor: '[REDACTED]',
           },
@@ -59,11 +64,23 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
     credentials: true,
   });
 
-  // Set centralized error handler
+  // Centralized error handler
   app.setErrorHandler(errorHandler);
+
+  // Initialize AI Provider
+  const aiProvider =
+    options.aiProvider ??
+    new OpenRouterProvider({
+      apiKey: env.OPENROUTER_API_KEY,
+      appUrl: env.APP_URL,
+      model: env.OPENROUTER_MODEL,
+      fallbackModel: env.OPENROUTER_FALLBACK_MODEL,
+      timeoutMs: env.OPENROUTER_TIMEOUT_MS,
+    });
 
   // Register routes
   await app.register(healthRoutes);
+  await app.register(aiRoutes, { aiProvider });
 
   return app;
 }
