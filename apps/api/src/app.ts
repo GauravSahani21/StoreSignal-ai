@@ -10,18 +10,28 @@ import { OpenRouterProvider } from './providers/ai/openrouter/OpenRouterProvider
 import type { AIProvider } from './providers/ai/types.js';
 import { getSTTProvider } from './providers/stt/index.js';
 import type { STTProvider } from './providers/stt/types.js';
+import { MockEmbeddingProvider } from './rag/embeddings/MockEmbeddingProvider.js';
+import type { EmbeddingProvider } from './rag/embeddings/types.js';
+import { KnowledgeStore } from './rag/retrieval/KnowledgeStore.js';
+import { RetrievalService } from './rag/retrieval/RetrievalService.js';
+import { seedKnowledgeBase } from './rag/seedKnowledge.js';
 import { aiRoutes } from './routes/ai.js';
 import { audioRoutes } from './routes/audio.js';
 import { consentRoutes } from './routes/consents.js';
 import { conversationRoutes } from './routes/conversations.js';
 import { healthRoutes } from './routes/health.js';
+import { knowledgeRoutes } from './routes/knowledge.js';
 
 export interface AppOptions {
   env?: EnvConfig;
   logger?: FastifyServerOptions['logger'];
   aiProvider?: AIProvider;
   sttProvider?: STTProvider;
+  embeddingProvider?: EmbeddingProvider;
+  knowledgeStore?: KnowledgeStore;
+  retrievalService?: RetrievalService;
   repositories?: Repositories;
+  skipAutoSeed?: boolean;
 }
 
 export async function buildApp(options: AppOptions = {}): Promise<FastifyInstance> {
@@ -59,10 +69,10 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
       }
       return `req-${crypto.randomUUID()}`;
     },
-    bodyLimit: 31457280, // 30MB limit for audio uploads
+    bodyLimit: 31457280, // 30MB limit
   });
 
-  // Register Multipart for audio streaming
+  // Register Multipart
   await app.register(multipart, {
     limits: {
       fileSize: env.AUDIO_MAX_BYTES,
@@ -113,6 +123,16 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   // Initialize STT Provider
   const sttProvider = getSTTProvider(env, options.sttProvider);
 
+  // Initialize RAG Services
+  const embeddingProvider = options.embeddingProvider ?? new MockEmbeddingProvider();
+  const knowledgeStore = options.knowledgeStore ?? new KnowledgeStore(embeddingProvider);
+  const retrievalService = options.retrievalService ?? new RetrievalService(knowledgeStore, embeddingProvider);
+
+  // Auto-seed default knowledge documents unless skipped
+  if (!options.skipAutoSeed) {
+    await seedKnowledgeBase(knowledgeStore, 'org-vayu-motors-dev');
+  }
+
   // Register routes
   await app.register(healthRoutes);
   await app.register(aiRoutes, { aiProvider });
@@ -122,6 +142,10 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
     repositories,
     sttProvider,
     audioMaxBytes: env.AUDIO_MAX_BYTES,
+  });
+  await app.register(knowledgeRoutes, {
+    knowledgeStore,
+    retrievalService,
   });
 
   return app;
