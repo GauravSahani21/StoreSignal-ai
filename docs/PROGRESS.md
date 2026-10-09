@@ -6,8 +6,8 @@ This document tracks the verified completion of each phase in accordance with th
 
 | Phase | Status | Date | Commit | Live-verified items | NOT RUN items | Notes |
 |---|---|---|---|---|---|---|
-| **Phase 1: Project Foundation** | IN PROGRESS | 2026-10-09 | Pending | Fastify server, /health endpoint, Zod config validation, safe error envelopes, React+Vite build, Postgres docker compose | Live external DB calls (schema deferred to Phase 3) | Strict TypeScript, zero leaked secrets, health route returns 200 with no secrets. |
-| **Phase 2: OpenRouter Connection** | NOT STARTED | - | - | - | - | Centralized AIProvider, error taxonomy, timeouts, live integration test. |
+| **Phase 1: Project Foundation** | PASSED | 2026-10-09 | bad5d28 | Fastify server, /health endpoint, Zod config validation, safe error envelopes, React+Vite build, Postgres docker compose | Live external DB calls (schema deferred to Phase 3) | Strict TypeScript, zero leaked secrets, health route returns 200 with no secrets. |
+| **Phase 2: OpenRouter Connection** | IN PROGRESS | 2026-10-09 | - | - | - | Centralized AIProvider, error taxonomy, timeouts, live integration test. |
 | **Phase 3: Database & Conversation Ingestion** | NOT STARTED | - | - | - | - | Migrations, org-scoped repositories, transcript segmentation, consent record. |
 | **Phase 4: Speech-to-Text** | NOT STARTED | - | - | - | - | Audio ingestion, STT provider, browser recording UI, language evaluation. |
 | **Phase 5: Retail Knowledge Retrieval (RAG)** | NOT STARTED | - | - | - | - | Ingestion, chunking, pgvector semantic search, seeded catalogue, deliberate gaps. |
