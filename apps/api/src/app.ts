@@ -3,16 +3,20 @@ import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastif
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import { type EnvConfig, loadEnv } from './config/env.js';
+import { createRepositories, type Repositories } from './database/repositories/index.js';
 import { errorHandler } from './errors/errorHandler.js';
 import { OpenRouterProvider } from './providers/ai/openrouter/OpenRouterProvider.js';
 import type { AIProvider } from './providers/ai/types.js';
 import { aiRoutes } from './routes/ai.js';
+import { consentRoutes } from './routes/consents.js';
+import { conversationRoutes } from './routes/conversations.js';
 import { healthRoutes } from './routes/health.js';
 
 export interface AppOptions {
   env?: EnvConfig;
   logger?: FastifyServerOptions['logger'];
   aiProvider?: AIProvider;
+  repositories?: Repositories;
 }
 
 export async function buildApp(options: AppOptions = {}): Promise<FastifyInstance> {
@@ -67,6 +71,20 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   // Centralized error handler
   app.setErrorHandler(errorHandler);
 
+  // Tenant context middleware (org_id extraction)
+  app.decorateRequest('orgId', '');
+  app.addHook('preHandler', async (request) => {
+    const orgHeader = request.headers['x-org-id'];
+    if (typeof orgHeader === 'string' && orgHeader.trim()) {
+      (request as unknown as { orgId: string }).orgId = orgHeader.trim();
+    } else {
+      (request as unknown as { orgId: string }).orgId = 'org-vayu-motors-dev';
+    }
+  });
+
+  // Initialize Repositories
+  const repositories = options.repositories ?? createRepositories();
+
   // Initialize AI Provider
   const aiProvider =
     options.aiProvider ??
@@ -81,6 +99,8 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   // Register routes
   await app.register(healthRoutes);
   await app.register(aiRoutes, { aiProvider });
+  await app.register(consentRoutes, { repositories });
+  await app.register(conversationRoutes, { repositories });
 
   return app;
 }
