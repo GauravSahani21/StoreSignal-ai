@@ -14,7 +14,18 @@ export interface EmitStoreEventParams {
 
 export interface IStoreEventRepository {
   emitEvent(params: EmitStoreEventParams): Promise<StoreEventRecord>;
-  listEvents(orgId: string, filter?: { type?: string; shopperId?: string; conversationId?: string }): Promise<StoreEventRecord[]>;
+  recordEvent(params: EmitStoreEventParams): Promise<StoreEventRecord>;
+  listEvents(
+    orgId: string,
+    filter?: {
+      type?: string;
+      shopperId?: string;
+      conversationId?: string;
+      storeId?: string;
+      from?: string;
+      to?: string;
+    }
+  ): Promise<StoreEventRecord[]>;
 }
 
 export class MemoryStoreEventRepository implements IStoreEventRepository {
@@ -39,9 +50,20 @@ export class MemoryStoreEventRepository implements IStoreEventRepository {
     return event;
   }
 
+  async recordEvent(params: EmitStoreEventParams): Promise<StoreEventRecord> {
+    return this.emitEvent(params);
+  }
+
   async listEvents(
     orgId: string,
-    filter?: { type?: string; shopperId?: string; conversationId?: string }
+    filter?: {
+      type?: string;
+      shopperId?: string;
+      conversationId?: string;
+      storeId?: string;
+      from?: string;
+      to?: string;
+    }
   ): Promise<StoreEventRecord[]> {
     return this.events
       .filter((e) => {
@@ -49,6 +71,9 @@ export class MemoryStoreEventRepository implements IStoreEventRepository {
         if (filter?.type && e.type !== filter.type) return false;
         if (filter?.shopperId && e.shopperId !== filter.shopperId) return false;
         if (filter?.conversationId && e.conversationId !== filter.conversationId) return false;
+        if (filter?.storeId && e.storeId !== filter.storeId) return false;
+        if (filter?.from && new Date(e.createdAt) < new Date(filter.from)) return false;
+        if (filter?.to && new Date(e.createdAt) > new Date(filter.to)) return false;
         return true;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

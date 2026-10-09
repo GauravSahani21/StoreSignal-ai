@@ -21,6 +21,7 @@ export interface LinkConversationParams {
 export interface IShopperRepository {
   createShopper(params: CreateShopperParams): Promise<Shopper>;
   getShopperById(orgId: string, id: string): Promise<Shopper | null>;
+  findById(orgId: string, id: string): Promise<Shopper | null>;
   findShopperByExternalId(orgId: string, externalId: string): Promise<Shopper | null>;
   findShopperByContactHash(orgId: string, contactHash: string): Promise<Shopper | null>;
   findShopperByAnonymousId(orgId: string, anonymousId: string): Promise<Shopper | null>;
@@ -60,6 +61,10 @@ export class MemoryShopperRepository implements IShopperRepository {
       return null;
     }
     return shopper;
+  }
+
+  async findById(orgId: string, id: string): Promise<Shopper | null> {
+    return this.getShopperById(orgId, id);
   }
 
   async findShopperByExternalId(orgId: string, externalId: string): Promise<Shopper | null> {

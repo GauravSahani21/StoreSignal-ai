@@ -15,8 +15,8 @@ This document tracks the verified completion of each phase in accordance with th
 | **Phase 7: SignalAnalyst Agent & Scoring** | PASSED | 2026-10-09 | HEAD | SignalAnalyst extraction, explicit basis guard, deterministic IntentScorer, rubric v1.0.0 | Live OpenRouter (gated) | Separation of LLM extraction and deterministic code scoring, customer volume abstention. |
 | **Phase 8: FollowUpOptimizer Agent** | PASSED | 2026-10-09 | HEAD | Grounded drafts, factsUsed grounding, consent gating, draft state machine, zero auto-send | Live OpenRouter (gated) | Human approval mandatory, zero outbound messaging clients, immutable approval audits. |
 | **Phase 9: Multi-Agent Orchestration** | PASSED | 2026-10-09 | HEAD | Single entry point, parallel execution, partial failure semantics, idempotency, tracing | Live OpenRouter (gated) | Full state machine PENDING->RETRIEVING->ANALYZING->FOLLOWUP->AWAITING_APPROVAL/COMPLETED. |
-| **Phase 10: Unified Shopper Profile** | PASSED | 2026-10-09 | HEAD | Identifier resolution, cross-visit memory, returning visitor +8 rubric weight, outcomes, right to erasure | Live OpenRouter (gated) | Strict explicit identifiers only, zero fuzzy guessing, immediate consent stoppage, cascade erasure audit. |
-| **Phase 11: Retail Analytics Dashboard** | NOT STARTED | - | - | - | - | Real data views, conversation workspace, metrics aggregation, DEMO badging. |
+| **Phase 10: Unified Shopper Profile** | PASSED | 2026-10-09 | bd0be3a | Identifier resolution, cross-visit memory, returning visitor +8 rubric weight, outcomes, right to erasure | Live OpenRouter (gated) | Strict explicit identifiers only, zero fuzzy guessing, immediate consent stoppage, cascade erasure audit. |
+| **Phase 11: Retail Analytics Dashboard** | PASSED | 2026-10-09 | HEAD | Real metrics aggregation (Areas A-F), dual-pane dialogue view, DEMO badging, low-data banner, RFC 4180 CSV export | - | Complete dynamic computation from persisted events; zero hardcoded metrics. |
 | **Phase 12: AI Evaluation Harness** | NOT STARTED | - | - | - | - | Golden dataset (≥20 transcripts), accuracy, abstention, latency, cost metrics. |
 | **Phase 13: Experimentation & Optimization** | NOT STARTED | - | - | - | - | Experiment variants, deterministic assignment, statistical checks with warnings. |
 | **Phase 14: Authentication, Authorization, Deployment** | NOT STARTED | - | - | - | - | RBAC, tenant isolation, production Docker, security audit. |
@@ -36,6 +36,7 @@ This document tracks the verified completion of each phase in accordance with th
 - [ADR 008: FollowUpOptimizer Agent and Governed Approval Queue Architecture](adr/008-followup-optimizer-and-governed-approval-queue.md)
 - [ADR 009: Multi-Agent Orchestration Engine and Lifecycle State Machine](adr/009-multi-agent-orchestration-and-lifecycle-state-machine.md)
 - [ADR 010: Unified Shopper Profile, Permitted Identifier Resolution, and Cross-Visit Continuity](adr/010-unified-shopper-profile-and-cross-visit-continuity.md)
+- [ADR 011: Retail Analytics Dashboard, Operational Intelligence, and Telemetry](adr/011-retail-analytics-dashboard.md)
 
 ---
 

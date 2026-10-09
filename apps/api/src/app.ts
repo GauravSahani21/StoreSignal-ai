@@ -26,6 +26,7 @@ import { knowledgeRoutes } from './routes/knowledge.js';
 import { followUpRoutes } from './routes/followup.js';
 import { orchestrationRoutes } from './routes/orchestration.js';
 import { shopperRoutes } from './routes/shoppers.js';
+import { analyticsRoutes } from './routes/analytics.js';
 
 export interface AppOptions {
   env?: EnvConfig;
@@ -171,6 +172,9 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
     retrievalService,
   });
   await app.register(shopperRoutes, {
+    repositories,
+  });
+  await app.register(analyticsRoutes, {
     repositories,
   });
 

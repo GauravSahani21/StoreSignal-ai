@@ -31,7 +31,9 @@ import {
   History,
   Lock,
   Tag,
+  BarChart3,
 } from 'lucide-react';
+import { RetailAnalyticsDashboard } from './components/RetailAnalyticsDashboard.js';
 
 interface HealthStatus {
   status: string;
@@ -162,7 +164,7 @@ export const App: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   // Tab navigation
-  const [activeTab, setActiveTab] = useState<'orchestration' | 'shopper'>('orchestration');
+  const [activeTab, setActiveTab] = useState<'orchestration' | 'shopper' | 'analytics'>('analytics');
 
   // Follow-up Queue State
   const [drafts, setDrafts] = useState<FollowUpDraft[]>([]);
@@ -602,9 +604,52 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Ingestion & Live Audio Capture */}
-          <div className="lg:col-span-5 space-y-6">
+        {/* Top-Level Navigation Bar */}
+        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+              activeTab === 'analytics'
+                ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4 text-emerald-400" />
+            Retail Operations Dashboard (Phase 11)
+            <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-mono font-bold">
+              AREAS A-F
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('orchestration')}
+            className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+              activeTab === 'orchestration'
+                ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Layers className="w-4 h-4 text-indigo-400" />
+            Live Dialogue &amp; Multi-Agent Studio
+          </button>
+          <button
+            onClick={() => setActiveTab('shopper')}
+            className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+              activeTab === 'shopper'
+                ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <UserCheck className="w-4 h-4 text-purple-400" />
+            Shopper Profile &amp; Continuity
+          </button>
+        </div>
+
+        {activeTab === 'analytics' ? (
+          <RetailAnalyticsDashboard />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column: Ingestion & Live Audio Capture */}
+            <div className="lg:col-span-5 space-y-6">
             {/* Live Audio Ingestion Simulator Card */}
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
               <div className="flex items-center justify-between">
@@ -1482,6 +1527,7 @@ export const App: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
       </main>
 
       {/* Footer */}

@@ -11,6 +11,7 @@ export interface CreateDraftInput {
   factsUsed: Array<{ fact: string; sourceChunkId?: string; sourceSegmentId?: string }>;
   recommendedAction: string;
   reason: string;
+  status?: 'draft' | 'approved' | 'rejected';
   blockedReason?: string | null;
 }
 
@@ -18,6 +19,8 @@ export interface IDraftRepository {
   createDraft(input: CreateDraftInput): Promise<FollowUpDraft>;
   getDraftById(orgId: string, id: string): Promise<FollowUpDraft | null>;
   getDraftsByConversation(orgId: string, conversationId: string): Promise<FollowUpDraft[]>;
+  getDraftsForConversation(orgId: string, conversationId: string): Promise<FollowUpDraft[]>;
+  listDrafts(orgId: string): Promise<FollowUpDraft[]>;
   updateDraft(
     orgId: string,
     id: string,
@@ -54,7 +57,7 @@ export class MemoryDraftRepository implements IDraftRepository {
       factsUsed: input.factsUsed,
       recommendedAction: input.recommendedAction,
       reason: input.reason,
-      status: 'draft',
+      status: input.status ?? 'draft',
       requiresHumanApproval: true,
       blockedReason: input.blockedReason ?? null,
       createdAt: new Date().toISOString(),
@@ -78,6 +81,20 @@ export class MemoryDraftRepository implements IDraftRepository {
     return Array.from(this.drafts.values())
       .filter((d) => d.orgId === orgId && d.conversationId === conversationId)
       .sort((a, b) => b.version - a.version)
+      .map((d) => ({ ...d }));
+  }
+
+  async getDraftsForConversation(
+    orgId: string,
+    conversationId: string
+  ): Promise<FollowUpDraft[]> {
+    return this.getDraftsByConversation(orgId, conversationId);
+  }
+
+  async listDrafts(orgId: string): Promise<FollowUpDraft[]> {
+    return Array.from(this.drafts.values())
+      .filter((d) => d.orgId === orgId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .map((d) => ({ ...d }));
   }
 

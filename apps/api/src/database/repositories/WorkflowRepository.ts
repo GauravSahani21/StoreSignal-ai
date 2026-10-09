@@ -7,6 +7,15 @@ export interface CreateWorkflowRunInput {
   idempotencyKey: string;
   version?: number;
   state?: WorkflowState;
+  stepResults?: Record<string, {
+    state: StepState;
+    durationMs?: number;
+    error?: string;
+    skipReason?: string;
+    output?: unknown;
+  }>;
+  resultSummary?: Record<string, unknown>;
+  durationMs?: number;
 }
 
 export interface UpdateWorkflowRunInput {
@@ -29,6 +38,7 @@ export interface IWorkflowRepository {
   getWorkflowRunById(orgId: string, id: string): Promise<WorkflowRun | null>;
   getWorkflowRunByIdempotencyKey(orgId: string, idempotencyKey: string): Promise<WorkflowRun | null>;
   getLatestWorkflowRun(orgId: string, conversationId: string): Promise<WorkflowRun | null>;
+  getLatestRunForConversation(orgId: string, conversationId: string): Promise<WorkflowRun | null>;
   listWorkflowRuns(orgId: string, conversationId: string): Promise<WorkflowRun[]>;
 }
 
@@ -48,10 +58,10 @@ export class MemoryWorkflowRepository implements IWorkflowRepository {
       idempotencyKey: input.idempotencyKey,
       version,
       state: input.state ?? 'PENDING',
-      stepResults: {},
-      resultSummary: {},
+      stepResults: input.stepResults ? { ...input.stepResults } : {},
+      resultSummary: input.resultSummary ? { ...input.resultSummary } : {},
       errorDetail: null,
-      durationMs: 0,
+      durationMs: input.durationMs ?? 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -107,6 +117,13 @@ export class MemoryWorkflowRepository implements IWorkflowRepository {
       .sort((a, b) => b.version - a.version);
 
     return matching[0] ? { ...matching[0] } : null;
+  }
+
+  async getLatestRunForConversation(
+    orgId: string,
+    conversationId: string
+  ): Promise<WorkflowRun | null> {
+    return this.getLatestWorkflowRun(orgId, conversationId);
   }
 
   async listWorkflowRuns(orgId: string, conversationId: string): Promise<WorkflowRun[]> {

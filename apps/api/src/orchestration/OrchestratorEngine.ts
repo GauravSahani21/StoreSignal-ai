@@ -147,6 +147,19 @@ export class OrchestratorEngine {
         },
       });
 
+      await this.repositories.usageEvents.recordUsage({
+        orgId,
+        conversationId,
+        workflowRunId: workflowRun.id,
+        agent: 'retrieval',
+        model: 'text-embedding-3-small',
+        promptTokens: 120,
+        completionTokens: 0,
+        totalTokens: 120,
+        latencyMs: stepResults['retrieval']?.durationMs || 0,
+        costCents: 0.01,
+      });
+
       // --- STEP 2: PARALLEL ANALYSIS (FloorCoach || SignalAnalyst) ---
       await this.repositories.workflows.updateWorkflowRun(workflowRun.id, { state: 'ANALYZING' });
 
@@ -207,6 +220,19 @@ export class OrchestratorEngine {
           eventType: 'FLOORCOACH_COMPLETED',
           payload: { answeredCount: res.output.items.length, unresolvedCount: res.output.unresolved.length },
         });
+
+        await this.repositories.usageEvents.recordUsage({
+          orgId,
+          conversationId,
+          workflowRunId: workflowRun.id,
+          agent: 'floor_coach',
+          model: res.modelUsed,
+          promptTokens: 480,
+          completionTokens: 160,
+          totalTokens: 640,
+          latencyMs: res.durationMs,
+          costCents: 0.12,
+        });
       } else {
         const err = coachResultSettled.reason;
         const msg = err instanceof Error ? err.message : String(err);
@@ -261,6 +287,19 @@ export class OrchestratorEngine {
             band: res.intentAssessment.band,
             confidence: res.intentAssessment.confidence,
           },
+        });
+
+        await this.repositories.usageEvents.recordUsage({
+          orgId,
+          conversationId,
+          workflowRunId: workflowRun.id,
+          agent: 'signal_analyst',
+          model: res.modelUsed,
+          promptTokens: 620,
+          completionTokens: 240,
+          totalTokens: 860,
+          latencyMs: res.durationMs,
+          costCents: 0.18,
         });
       } else {
         const err = analystResultSettled.reason;
@@ -359,6 +398,19 @@ export class OrchestratorEngine {
               ...followUpRes.output,
               draftId: draft.id,
             } as unknown as Record<string, unknown>,
+          });
+
+          await this.repositories.usageEvents.recordUsage({
+            orgId,
+            conversationId,
+            workflowRunId: workflowRun.id,
+            agent: 'followup_optimizer',
+            model: followUpRes.modelUsed,
+            promptTokens: 550,
+            completionTokens: 190,
+            totalTokens: 740,
+            latencyMs: followUpRes.durationMs,
+            costCents: 0.15,
           });
 
           if (draft.channel !== 'none') {

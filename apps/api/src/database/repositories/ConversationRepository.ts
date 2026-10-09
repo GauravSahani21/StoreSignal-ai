@@ -7,7 +7,9 @@ import type {
 } from './types.js';
 
 export interface CreateConversationParams {
+  id?: string;
   orgId: string;
+  storeId?: string;
   sessionId?: string;
   source: 'transcript_import' | 'audio_upload' | 'mic_recording';
   language?: string;
@@ -28,6 +30,8 @@ export interface IConversationRepository {
   createConversation(params: CreateConversationParams): Promise<Conversation>;
   createTranscriptWithSegments(params: CreateTranscriptParams): Promise<TranscriptWithSegments>;
   getConversationById(orgId: string, id: string): Promise<ConversationWithTranscript | null>;
+  findById(id: string): Promise<ConversationWithTranscript | null>;
+  getTranscript(conversationId: string): Promise<TranscriptWithSegments | null>;
   listConversations(
     orgId: string,
     options?: { limit?: number; offset?: number; status?: string }
@@ -40,11 +44,12 @@ export class MemoryConversationRepository implements IConversationRepository {
   private transcripts: Map<string, TranscriptWithSegments> = new Map();
 
   async createConversation(params: CreateConversationParams): Promise<Conversation> {
-    const id = `conv-${crypto.randomUUID()}`;
+    const id = params.id || `conv-${crypto.randomUUID()}`;
     const now = new Date().toISOString();
     const conversation: Conversation = {
       id,
       orgId: params.orgId,
+      storeId: params.storeId || 'store-indiranagar-01',
       sessionId: params.sessionId,
       source: params.source,
       language: params.language || 'en',
@@ -99,6 +104,24 @@ export class MemoryConversationRepository implements IConversationRepository {
       ...conv,
       latestTranscript,
     };
+  }
+
+  async findById(id: string): Promise<ConversationWithTranscript | null> {
+    const conv = this.conversations.get(id);
+    if (!conv) return null;
+    return this.getConversationById(conv.orgId, id);
+  }
+
+  async getTranscript(conversationId: string): Promise<TranscriptWithSegments | null> {
+    let latestTranscript: TranscriptWithSegments | null = null;
+    for (const trn of this.transcripts.values()) {
+      if (trn.conversationId === conversationId) {
+        if (!latestTranscript || trn.version > latestTranscript.version) {
+          latestTranscript = trn;
+        }
+      }
+    }
+    return latestTranscript;
   }
 
   async listConversations(

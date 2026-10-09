@@ -57,6 +57,7 @@ export interface ConsentRecord {
 export interface Conversation {
   id: string;
   orgId: string;
+  storeId?: string;
   sessionId?: string;
   source: 'transcript_import' | 'audio_upload' | 'mic_recording';
   language: string;
@@ -259,4 +260,165 @@ export interface ShopperProfileView {
   outcomes: OutcomeRecord[];
   hasActiveConsent: boolean;
   notes?: string;
+}
+
+export interface UsageEventRecord {
+  id: string;
+  orgId: string;
+  conversationId?: string;
+  workflowRunId?: string;
+  agent: string;
+  model: string;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  latencyMs: number;
+  costCents: number;
+  createdAt: string;
+}
+
+export type DemoFilter = 'all' | 'real_only' | 'demo_only';
+
+export interface AnalyticsFilter {
+  storeId?: string;
+  from?: string; // ISO date
+  to?: string;   // ISO date
+  demoFilter?: DemoFilter;
+}
+
+export interface OverviewMetrics {
+  conversationsProcessed: number;
+  uniqueAuthorizedShoppers: number;
+  questionsDetected: number;
+  objectionsIdentified: number;
+  unresolvedQuestions: number;
+  followUpDraftsTotal: number;
+  pendingApprovals: number;
+  recordedConversions: number;
+  totalRevenueInr: number;
+  conversionRatePercentage: number;
+  avgProcessingLatencyMs: number;
+  workflowSuccessRatePercentage: number;
+  totalAiTokensUsed: number;
+  totalAiCostUsd: number;
+  sampleSize: number;
+  isLowDataState: boolean;
+}
+
+export interface ConversationListItem {
+  id: string;
+  orgId: string;
+  storeId: string;
+  isDemo: boolean;
+  status: string;
+  source: string;
+  segmentCount: number;
+  shopperId?: string;
+  externalCustomerId?: string;
+  isReturningVisitor: boolean;
+  workflowState?: string;
+  workflowDurationMs?: number;
+  intentScore?: number;
+  intentBand?: string;
+  createdAt: string;
+}
+
+export interface ConversationIntelligenceView {
+  conversation: {
+    id: string;
+    orgId: string;
+    storeId: string;
+    isDemo: boolean;
+    status: string;
+    source: string;
+    createdAt: string;
+  };
+  transcript: {
+    id: string;
+    segments: Array<{
+      id: string;
+      speaker: string;
+      text: string;
+      startMs?: number | null;
+      endMs?: number | null;
+    }>;
+  };
+  shopper?: {
+    id: string;
+    externalCustomerId?: string | null;
+    isIdentified: boolean;
+    visitCount: number;
+  } | null;
+  intelligence: {
+    summary?: string;
+    intentScore?: number;
+    intentBand?: string;
+    intentConfidence?: string;
+    questionsDetected: Array<{ question: string; segmentId?: string }>;
+    objectionsIdentified: Array<{ objectionType: string; customerQuote: string; segmentId?: string }>;
+    unresolvedQuestions: string[];
+    suggestedResponses: Array<{ topic: string; response: string; citedChunks?: string[] }>;
+    productInterests: Array<{ productRef: string; text: string; basis: string; segmentId?: string }>;
+    contributingSignals: Array<{ signalId: string; weight: number; label: string; evidenceQuote?: string; segmentId?: string }>;
+  };
+  workflow?: {
+    id: string;
+    state: string;
+    durationMs: number;
+    stepResults: Record<string, unknown>;
+  } | null;
+  drafts: Array<{
+    id: string;
+    channel: string;
+    status: string;
+    subject?: string | null;
+    message?: string | null;
+    recommendedAction: string;
+  }>;
+  outcomes: OutcomeRecord[];
+}
+
+export interface ShopperInsightsMetrics {
+  totalShoppers: number;
+  identifiedShoppers: number;
+  anonymousShoppers: number;
+  returningVisitors: number;
+  intentBandDistribution: Record<'high' | 'medium' | 'low' | 'abstained', number>;
+  topProductInterests: Array<{ productRef: string; name: string; count: number }>;
+  conversionByVisitorType: {
+    firstTimeConversions: number;
+    firstTimeTotal: number;
+    repeatConversions: number;
+    repeatTotal: number;
+  };
+  sampleSize: number;
+}
+
+export interface AgentActivityMetrics {
+  totalInvocations: number;
+  invocationsByAgent: Record<string, { count: number; successCount: number; failureCount: number; avgLatencyMs: number }>;
+  overallSuccessRate: number;
+  avgLatencyMs: number;
+  p95LatencyMs: number;
+  totalTokens: number;
+  totalCostUsd: number;
+  sampleSize: number;
+}
+
+export interface FollowUpQueueMetrics {
+  totalDrafts: number;
+  byStatus: Record<'draft' | 'approved' | 'rejected', number>;
+  byChannel: Record<string, number>;
+  approvalRatePercentage: number;
+  sampleSize: number;
+}
+
+export interface StoreConversionInsights {
+  frequentObjections: Array<{ type: string; count: number; percentage: number }>;
+  frequentUnansweredQuestions: Array<{ question: string; count: number }>;
+  missedConversionReasons: Array<{ reason: string; count: number }>;
+  totalConversionValueInr: number;
+  averageDealValueInr: number;
+  sampleSize: number;
+  isLowDataWarning: boolean;
 }
