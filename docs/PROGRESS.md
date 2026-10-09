@@ -7,7 +7,7 @@ This document tracks the verified completion of each phase in accordance with th
 | Phase | Status | Date | Commit | Live-verified items | NOT RUN items | Notes |
 |---|---|---|---|---|---|---|
 | **Phase 1: Project Foundation** | PASSED | 2026-10-09 | bad5d28 | Fastify server, /health endpoint, Zod config validation, safe error envelopes, React+Vite build, Postgres docker compose | Live external DB calls (schema deferred to Phase 3) | Strict TypeScript, zero leaked secrets, health route returns 200 with no secrets. |
-| **Phase 2: OpenRouter Connection** | IN PROGRESS | 2026-10-09 | - | - | - | Centralized AIProvider, error taxonomy, timeouts, live integration test. |
+| **Phase 2: OpenRouter Connection** | BLOCKED | 2026-10-09 | dd19b0e | - | Live OpenRouter verification | Centralized AIProvider, error taxonomy, timeouts, and mocked unit/integration tests passed (25/25). Awaiting OPENROUTER_API_KEY for live gate. |
 | **Phase 3: Database & Conversation Ingestion** | NOT STARTED | - | - | - | - | Migrations, org-scoped repositories, transcript segmentation, consent record. |
 | **Phase 4: Speech-to-Text** | NOT STARTED | - | - | - | - | Audio ingestion, STT provider, browser recording UI, language evaluation. |
 | **Phase 5: Retail Knowledge Retrieval (RAG)** | NOT STARTED | - | - | - | - | Ingestion, chunking, pgvector semantic search, seeded catalogue, deliberate gaps. |
@@ -27,9 +27,10 @@ This document tracks the verified completion of each phase in accordance with th
 ## Decisions (ADR Index)
 
 - [ADR 001: Monorepo Structure and Technology Foundation](adr/001-project-foundation.md)
+- [ADR 002: Centralized OpenRouter LLM Gateway and Error Taxonomy](adr/002-openrouter-llm-gateway.md)
 
 ---
 
 ## Open Questions for the User
 
-*(None at Phase 1. Ready for Phase 2.)*
+- **OPENROUTER_API_KEY Required for Phase 2 Live Gate:** The centralized OpenRouter gateway and complete §7.5 error taxonomy are implemented and verified via automated test suites. To execute the live integration test through OpenRouter (`RUN_LIVE_TESTS=1`), please provide your `OPENROUTER_API_KEY` (or add it to your environment / `.env`).
