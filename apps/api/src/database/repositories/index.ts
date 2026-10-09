@@ -46,6 +46,10 @@ import {
   type IUsageEventRepository,
   MemoryUsageEventRepository,
 } from './UsageEventRepository.js';
+import {
+  type IExperimentRepository,
+  MemoryExperimentRepository,
+} from './ExperimentRepository.js';
 
 export interface Repositories {
   conversations: IConversationRepository;
@@ -60,6 +64,7 @@ export interface Repositories {
   storeEvents: IStoreEventRepository;
   auditLogs: IAuditLogRepository;
   usageEvents: IUsageEventRepository;
+  experiments: IExperimentRepository;
 }
 
 export function createRepositories(): Repositories {
@@ -76,6 +81,7 @@ export function createRepositories(): Repositories {
     storeEvents: new MemoryStoreEventRepository(),
     auditLogs: new MemoryAuditLogRepository(),
     usageEvents: new MemoryUsageEventRepository(),
+    experiments: new MemoryExperimentRepository(),
   };
 }
 
@@ -92,3 +98,4 @@ export * from './OutcomeRepository.js';
 export * from './StoreEventRepository.js';
 export * from './AuditLogRepository.js';
 export * from './UsageEventRepository.js';
+export * from './ExperimentRepository.js';

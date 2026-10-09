@@ -18,7 +18,7 @@ This document tracks the verified completion of each phase in accordance with th
 | **Phase 10: Unified Shopper Profile** | PASSED | 2026-10-09 | bd0be3a | Identifier resolution, cross-visit memory, returning visitor +8 rubric weight, outcomes, right to erasure | Live OpenRouter (gated) | Strict explicit identifiers only, zero fuzzy guessing, immediate consent stoppage, cascade erasure audit. |
 | **Phase 11: Retail Analytics Dashboard** | PASSED | 2026-10-09 | HEAD | Real metrics aggregation (Areas A-F), dual-pane dialogue view, DEMO badging, low-data banner, RFC 4180 CSV export | - | Complete dynamic computation from persisted events; zero hardcoded metrics. |
 | **Phase 12: AI Evaluation Harness** | PASSED | 2026-10-09 | HEAD | Golden dataset (22 transcripts), 100% intent accuracy, 100% grounding, 100% gap abstention, 100% consent & human approval compliance, latency/token/cost telemetry | - | CLI runner `npm run eval`, JSON/MD reports, automated Vitest suite. |
-| **Phase 13: Experimentation & Optimization** | NOT STARTED | - | - | - | - | Experiment variants, deterministic assignment, statistical checks with warnings. |
+| **Phase 13: Experimentation & Optimization** | PASSED | 2026-10-09 | HEAD | Deterministic SHA-256 assignment, Wilson 95% CI, two-proportion z-tests, min-sample gating, CSV ingestion, ExperimentationDashboard UI | - | 11/11 tests passing, zero outbound send paths, bandit architecture specified. |
 | **Phase 14: Authentication, Authorization, Deployment** | NOT STARTED | - | - | - | - | RBAC, tenant isolation, production Docker, security audit. |
 | **Phase 15: Portfolio Packaging** | NOT STARTED | - | - | - | - | Polished README, architecture docs, demo script, verification checklist. |
 
@@ -38,6 +38,7 @@ This document tracks the verified completion of each phase in accordance with th
 - [ADR 010: Unified Shopper Profile, Permitted Identifier Resolution, and Cross-Visit Continuity](adr/010-unified-shopper-profile-and-cross-visit-continuity.md)
 - [ADR 011: Retail Analytics Dashboard, Operational Intelligence, and Telemetry](adr/011-retail-analytics-dashboard.md)
 - [ADR 012: AI Evaluation Harness, Golden Dataset, and Continuous Quality Gates](adr/012-ai-evaluation-harness.md)
+- [ADR 013: Campaign Experimentation, Deterministic Variant Assignment, and Contextual Bandit Architecture](adr/013-campaign-experimentation-and-bandit-design.md)
 
 ---
 

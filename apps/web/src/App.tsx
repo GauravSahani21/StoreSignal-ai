@@ -32,8 +32,10 @@ import {
   Lock,
   Tag,
   BarChart3,
+  FlaskConical,
 } from 'lucide-react';
 import { RetailAnalyticsDashboard } from './components/RetailAnalyticsDashboard.js';
+import { ExperimentationDashboard } from './components/ExperimentationDashboard.js';
 
 interface HealthStatus {
   status: string;
@@ -164,7 +166,7 @@ export const App: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   // Tab navigation
-  const [activeTab, setActiveTab] = useState<'orchestration' | 'shopper' | 'analytics'>('analytics');
+  const [activeTab, setActiveTab] = useState<'orchestration' | 'shopper' | 'analytics' | 'experiments'>('analytics');
 
   // Follow-up Queue State
   const [drafts, setDrafts] = useState<FollowUpDraft[]>([]);
@@ -632,20 +634,25 @@ export const App: React.FC = () => {
             Live Dialogue &amp; Multi-Agent Studio
           </button>
           <button
-            onClick={() => setActiveTab('shopper')}
+            onClick={() => setActiveTab('experiments')}
             className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
-              activeTab === 'shopper'
+              activeTab === 'experiments'
                 ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <UserCheck className="w-4 h-4 text-purple-400" />
-            Shopper Profile &amp; Continuity
+            <FlaskConical className="w-4 h-4 text-purple-400" />
+            Campaign Experiments (Phase 13)
+            <span className="px-1.5 py-0.2 rounded text-[10px] bg-purple-500/20 text-purple-300 font-mono font-bold">
+              A/B STATS
+            </span>
           </button>
         </div>
 
         {activeTab === 'analytics' ? (
           <RetailAnalyticsDashboard />
+        ) : activeTab === 'experiments' ? (
+          <ExperimentationDashboard />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column: Ingestion & Live Audio Capture */}
