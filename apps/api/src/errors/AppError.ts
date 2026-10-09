@@ -207,3 +207,12 @@ export class STTProviderError extends AppError {
     super(message);
   }
 }
+
+export class InvalidStateTransitionError extends AppError {
+  readonly code = 'INVALID_STATE_TRANSITION';
+  readonly statusCode = 409;
+
+  constructor(message = 'Invalid entity state transition requested.') {
+    super(`[INVALID_STATE_TRANSITION] ${message}`);
+  }
+}

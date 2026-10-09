@@ -18,6 +18,14 @@ import {
   type IAgentRunRepository,
   MemoryAgentRunRepository,
 } from './AgentRunRepository.js';
+import {
+  type IDraftRepository,
+  MemoryDraftRepository,
+} from './DraftRepository.js';
+import {
+  type IWorkflowEventRepository,
+  MemoryWorkflowEventRepository,
+} from './WorkflowEventRepository.js';
 
 export interface Repositories {
   conversations: IConversationRepository;
@@ -25,6 +33,8 @@ export interface Repositories {
   products: IProductRepository;
   shoppers: IShopperRepository;
   agentRuns: IAgentRunRepository;
+  drafts: IDraftRepository;
+  workflowEvents: IWorkflowEventRepository;
 }
 
 export function createRepositories(): Repositories {
@@ -34,6 +44,8 @@ export function createRepositories(): Repositories {
     products: new MemoryProductRepository(),
     shoppers: new MemoryShopperRepository(),
     agentRuns: new MemoryAgentRunRepository(),
+    drafts: new MemoryDraftRepository(),
+    workflowEvents: new MemoryWorkflowEventRepository(),
   };
 }
 
@@ -43,3 +55,5 @@ export * from './ConsentRepository.js';
 export * from './ProductRepository.js';
 export * from './ShopperRepository.js';
 export * from './AgentRunRepository.js';
+export * from './DraftRepository.js';
+export * from './WorkflowEventRepository.js';

@@ -151,7 +151,8 @@ export function validateNumericGrounding(
     ...customerSegments.map((s) => s.text),
   ]
     .join(' ')
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/(\d),(\d)/g, '$1$2');
 
   const ungroundedNumbers: string[] = [];
 
@@ -206,4 +207,87 @@ export function validateExplicitBasis(
   }
 
   return { guard: 'explicit_basis_check', passed: true };
+}
+
+/**
+ * Guard 6: Internal Score Leakage Check
+ * Verifies customer-facing message never reveals internal scoring, rubrics, or confidence bands.
+ */
+export function validateNoInternalScoreLeakage(text: string): GuardValidationResult {
+  const forbiddenPatterns = [
+    /\bintent\s*score\b/i,
+    /\bintent\s*band\b/i,
+    /\bintent\s*assessment\b/i,
+    /\binsufficient_evidence\b/i,
+    /\brubric\b/i,
+    /\bscoring\s*rubric\b/i,
+    /\bhigh\s*intent\b/i,
+    /\blow\s*intent\b/i,
+    /\bmedium\s*intent\b/i,
+    /\bcontributing\s*signals\b/i,
+    /\bsignalanalyst\b/i,
+    /\bfloorcoach\b/i,
+  ];
+
+  for (const pattern of forbiddenPatterns) {
+    if (pattern.test(text)) {
+      return {
+        guard: 'internal_score_leakage',
+        passed: false,
+        message: `Customer message contains internal algorithmic scores or terminology matching ${pattern.source}`,
+        details: { matchedPattern: pattern.source },
+      };
+    }
+  }
+
+  return { guard: 'internal_score_leakage', passed: true };
+}
+
+/**
+ * Guard 7: Facts Used & Spec Grounding in Draft Message
+ * Verifies every fact claim and numeric figure in follow-up draft message is grounded in factsUsed or dialogue.
+ */
+export function validateFactsUsedGrounding(
+  message: string,
+  factsUsed: { fact: string; sourceChunkId?: string; sourceSegmentId?: string }[],
+  retrievedChunks: RetrievedChunk[],
+  customerSegments: ParsedSegment[]
+): GuardValidationResult {
+  const numbersInMessage = extractNumbersAndSpecs(message);
+  if (numbersInMessage.length === 0) {
+    return { guard: 'facts_used_grounding', passed: true };
+  }
+
+  const allowableText = [
+    ...factsUsed.map((f) => f.fact),
+    ...retrievedChunks.map((c) => c.content),
+    ...customerSegments.map((s) => s.text),
+  ]
+    .join(' ')
+    .toLowerCase()
+    .replace(/(\d),(\d)/g, '$1$2');
+
+  const ungrounded: string[] = [];
+  for (const numStr of numbersInMessage) {
+    const cleanDigits = numStr.replace(/[^\d]/g, '');
+    if (!cleanDigits) continue;
+
+    const groundDigits = allowableText.replace(/[^\d]/g, ' ');
+    const appearsInAllowed = groundDigits.split(/\s+/).includes(cleanDigits) || allowableText.includes(cleanDigits);
+
+    if (!appearsInAllowed) {
+      ungrounded.push(numStr);
+    }
+  }
+
+  if (ungrounded.length > 0) {
+    return {
+      guard: 'facts_used_grounding',
+      passed: false,
+      message: `Follow-up message contains numbers/specs not grounded in factsUsed or dialogue: ${ungrounded.join(', ')}`,
+      details: { ungrounded },
+    };
+  }
+
+  return { guard: 'facts_used_grounding', passed: true };
 }

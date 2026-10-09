@@ -83,3 +83,40 @@ export interface TranscriptWithSegments extends Transcript {
 export interface ConversationWithTranscript extends Conversation {
   latestTranscript: TranscriptWithSegments | null;
 }
+
+export interface FollowUpDraft {
+  id: string;
+  orgId: string;
+  conversationId: string;
+  version: number;
+  channel: 'email' | 'sms' | 'whatsapp' | 'call_task' | 'none';
+  subject: string | null;
+  message: string | null;
+  factsUsed: Array<{ fact: string; sourceChunkId?: string; sourceSegmentId?: string }>;
+  recommendedAction: string;
+  reason: string;
+  status: 'draft' | 'approved' | 'rejected';
+  requiresHumanApproval: boolean;
+  blockedReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApprovalRecord {
+  id: string;
+  orgId: string;
+  draftId: string;
+  decision: 'approved' | 'rejected';
+  reviewerId: string;
+  reviewerNotes?: string | null;
+  createdAt: string;
+}
+
+export interface WorkflowEvent {
+  id: string;
+  orgId: string;
+  conversationId: string;
+  eventType: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
+}

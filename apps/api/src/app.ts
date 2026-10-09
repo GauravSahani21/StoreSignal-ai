@@ -23,6 +23,7 @@ import { consentRoutes } from './routes/consents.js';
 import { conversationRoutes } from './routes/conversations.js';
 import { healthRoutes } from './routes/health.js';
 import { knowledgeRoutes } from './routes/knowledge.js';
+import { followUpRoutes } from './routes/followup.js';
 
 export interface AppOptions {
   env?: EnvConfig;
@@ -155,6 +156,10 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
     retrievalService,
   });
   await app.register(analystRoutes, {
+    repositories,
+    aiProvider,
+  });
+  await app.register(followUpRoutes, {
     repositories,
     aiProvider,
   });
