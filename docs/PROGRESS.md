@@ -1,0 +1,35 @@
+# StoreSignal AI - Progress Ledger
+
+This document tracks the verified completion of each phase in accordance with the StoreSignal AI Operating Contract (§0.1 - §0.6, §20.2).
+
+## Phase Progress Table
+
+| Phase | Status | Date | Commit | Live-verified items | NOT RUN items | Notes |
+|---|---|---|---|---|---|---|
+| **Phase 1: Project Foundation** | IN PROGRESS | 2026-10-09 | Pending | Fastify server, /health endpoint, Zod config validation, safe error envelopes, React+Vite build, Postgres docker compose | Live external DB calls (schema deferred to Phase 3) | Strict TypeScript, zero leaked secrets, health route returns 200 with no secrets. |
+| **Phase 2: OpenRouter Connection** | NOT STARTED | - | - | - | - | Centralized AIProvider, error taxonomy, timeouts, live integration test. |
+| **Phase 3: Database & Conversation Ingestion** | NOT STARTED | - | - | - | - | Migrations, org-scoped repositories, transcript segmentation, consent record. |
+| **Phase 4: Speech-to-Text** | NOT STARTED | - | - | - | - | Audio ingestion, STT provider, browser recording UI, language evaluation. |
+| **Phase 5: Retail Knowledge Retrieval (RAG)** | NOT STARTED | - | - | - | - | Ingestion, chunking, pgvector semantic search, seeded catalogue, deliberate gaps. |
+| **Phase 6: FloorCoach Agent** | NOT STARTED | - | - | - | - | Sales coach prompts, grounding guards, source citations, abstention on gaps. |
+| **Phase 7: SignalAnalyst Agent & Scoring** | NOT STARTED | - | - | - | - | Shopper intelligence, explicit vs inferred, deterministic intent rubric engine. |
+| **Phase 8: FollowUpOptimizer Agent** | NOT STARTED | - | - | - | - | Draft generation, grounding guards, human approval gate, zero auto-send. |
+| **Phase 9: Multi-Agent Orchestration** | NOT STARTED | - | - | - | - | State machine, parallel execution, retries, idempotency, event tracing. |
+| **Phase 10: Unified Shopper Profile** | NOT STARTED | - | - | - | - | Cross-visit continuity, permitted identifiers, deletion/retention, outcome tracking. |
+| **Phase 11: Retail Analytics Dashboard** | NOT STARTED | - | - | - | - | Real data views, conversation workspace, metrics aggregation, DEMO badging. |
+| **Phase 12: AI Evaluation Harness** | NOT STARTED | - | - | - | - | Golden dataset (≥20 transcripts), accuracy, abstention, latency, cost metrics. |
+| **Phase 13: Experimentation & Optimization** | NOT STARTED | - | - | - | - | Experiment variants, deterministic assignment, statistical checks with warnings. |
+| **Phase 14: Authentication, Authorization, Deployment** | NOT STARTED | - | - | - | - | RBAC, tenant isolation, production Docker, security audit. |
+| **Phase 15: Portfolio Packaging** | NOT STARTED | - | - | - | - | Polished README, architecture docs, demo script, verification checklist. |
+
+---
+
+## Decisions (ADR Index)
+
+- [ADR 001: Monorepo Structure and Technology Foundation](adr/001-project-foundation.md)
+
+---
+
+## Open Questions for the User
+
+*(None at Phase 1. Ready for Phase 2.)*
