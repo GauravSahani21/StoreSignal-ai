@@ -11,8 +11,8 @@ This document tracks the verified completion of each phase in accordance with th
 | **Phase 3: Database & Conversation Ingestion** | PASSED | 2026-10-09 | 35a094b | Repositories, segmentation, consent enforcement, seeding | - | Full schema, org_id tenant isolation, stable segment IDs, idempotent seed. |
 | **Phase 4: Speech-to-Text** | PASSED | 2026-10-09 | a306afc | Audio ingestion, Mock & Whisper STT, versioned edit, right to erasure | Live Whisper API (gated) | Consent required, content validation, size limits, Hinglish evaluation documented. |
 | **Phase 5: Retail Knowledge Retrieval (RAG)** | PASSED | 2026-10-09 | da5232e | Structure-aware chunking, semantic retrieval, deliberate gaps | - | High retrieval hit-rate, traceable sources, abstention on gaps verified. |
-| **Phase 6: FloorCoach Agent** | IN PROGRESS | 2026-10-09 | - | - | - | Sales coach prompts, grounding guards, source citations, abstention on gaps. |
-| **Phase 7: SignalAnalyst Agent & Scoring** | NOT STARTED | - | - | - | - | Shopper intelligence, explicit vs inferred, deterministic intent rubric engine. |
+| **Phase 6: FloorCoach Agent** | PASSED | 2026-10-09 | 611cc8e | Grounding guards, RAG citations, gap abstention, repair loop | Live OpenRouter (gated) | Grounding guards enforced in code; unverified gaps move to unresolved without invented numbers. |
+| **Phase 7: SignalAnalyst Agent & Scoring** | IN PROGRESS | 2026-10-09 | - | - | - | Shopper intelligence, explicit vs inferred, deterministic intent rubric engine. |
 | **Phase 8: FollowUpOptimizer Agent** | NOT STARTED | - | - | - | - | Draft generation, grounding guards, human approval gate, zero auto-send. |
 | **Phase 9: Multi-Agent Orchestration** | NOT STARTED | - | - | - | - | State machine, parallel execution, retries, idempotency, event tracing. |
 | **Phase 10: Unified Shopper Profile** | NOT STARTED | - | - | - | - | Cross-visit continuity, permitted identifiers, deletion/retention, outcome tracking. |
