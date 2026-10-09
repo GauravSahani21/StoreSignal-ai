@@ -159,3 +159,104 @@ export interface WorkflowRun {
   createdAt: string;
   updatedAt: string;
 }
+
+export type ShopperLinkingBasis =
+  | 'explicit_customer_id'
+  | 'explicit_phone_hash'
+  | 'explicit_email_hash'
+  | 'anonymous_session';
+
+export interface ConversationShopperLink {
+  id: string;
+  orgId: string;
+  shopperId: string;
+  conversationId: string;
+  basis: ShopperLinkingBasis;
+  authorizer: string;
+  createdAt: string;
+}
+
+export type OutcomeType = 'purchase' | 'missed_conversion' | 'no_response';
+
+export interface OutcomeRecord {
+  id: string;
+  orgId: string;
+  shopperId?: string;
+  conversationId?: string;
+  sessionId?: string;
+  type: OutcomeType;
+  reason?: string;
+  value?: number;
+  recordedBy: string;
+  recordedAt: string;
+  createdAt: string;
+}
+
+export interface StoreEventRecord {
+  id: string;
+  orgId: string;
+  storeId?: string;
+  sessionId?: string;
+  shopperId?: string;
+  conversationId?: string;
+  type: string;
+  source: 'agent' | 'manual' | 'csv_import' | 'system';
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface AuditLogRecord {
+  id: string;
+  orgId: string;
+  actor: string;
+  action: string;
+  resource: string;
+  resourceId?: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface ShopperHistoryContext {
+  hasAuthorizedHistory: boolean;
+  isReturningVisitor: boolean;
+  visitCount: number;
+  priorInterests: string[];
+  unresolvedObjections: string[];
+  priorRecommendations: string[];
+  lastVisitDate?: string;
+}
+
+export interface ShopperProfileView {
+  shopper: Shopper;
+  isAnonymous: boolean;
+  visitCount: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  interests: string[];
+  pastQuestions: Array<{
+    conversationId: string;
+    question: string;
+    date: string;
+  }>;
+  unresolvedObjections: Array<{
+    conversationId: string;
+    objectionType: string;
+    customerText: string;
+    date: string;
+  }>;
+  priorRecommendations: Array<{
+    conversationId: string;
+    recommendation: string;
+    date: string;
+  }>;
+  followUpHistory: Array<{
+    draftId: string;
+    channel: string;
+    status: string;
+    recommendedAction: string;
+    date: string;
+  }>;
+  outcomes: OutcomeRecord[];
+  hasActiveConsent: boolean;
+  notes?: string;
+}

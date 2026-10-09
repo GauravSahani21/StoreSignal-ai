@@ -30,6 +30,18 @@ import {
   type IWorkflowRepository,
   MemoryWorkflowRepository,
 } from './WorkflowRepository.js';
+import {
+  type IOutcomeRepository,
+  MemoryOutcomeRepository,
+} from './OutcomeRepository.js';
+import {
+  type IStoreEventRepository,
+  MemoryStoreEventRepository,
+} from './StoreEventRepository.js';
+import {
+  type IAuditLogRepository,
+  MemoryAuditLogRepository,
+} from './AuditLogRepository.js';
 
 export interface Repositories {
   conversations: IConversationRepository;
@@ -40,6 +52,9 @@ export interface Repositories {
   drafts: IDraftRepository;
   workflowEvents: IWorkflowEventRepository;
   workflows: IWorkflowRepository;
+  outcomes: IOutcomeRepository;
+  storeEvents: IStoreEventRepository;
+  auditLogs: IAuditLogRepository;
 }
 
 export function createRepositories(): Repositories {
@@ -52,6 +67,9 @@ export function createRepositories(): Repositories {
     drafts: new MemoryDraftRepository(),
     workflowEvents: new MemoryWorkflowEventRepository(),
     workflows: new MemoryWorkflowRepository(),
+    outcomes: new MemoryOutcomeRepository(),
+    storeEvents: new MemoryStoreEventRepository(),
+    auditLogs: new MemoryAuditLogRepository(),
   };
 }
 
@@ -64,3 +82,6 @@ export * from './AgentRunRepository.js';
 export * from './DraftRepository.js';
 export * from './WorkflowEventRepository.js';
 export * from './WorkflowRepository.js';
+export * from './OutcomeRepository.js';
+export * from './StoreEventRepository.js';
+export * from './AuditLogRepository.js';

@@ -23,8 +23,15 @@ export function buildFollowUpUserPrompt(params: {
   retrievedChunks: RetrievedChunk[];
   permittedChannels: string[];
   hasConsent: boolean;
+  shopperHistory?: {
+    hasAuthorizedHistory: boolean;
+    visitCount: number;
+    priorInterests: string[];
+    unresolvedObjections: string[];
+    priorRecommendations: string[];
+  };
 }): string {
-  const { analystOutput, floorCoachOutput, retrievedChunks, permittedChannels, hasConsent } = params;
+  const { analystOutput, floorCoachOutput, retrievedChunks, permittedChannels, hasConsent, shopperHistory } = params;
 
   const chunksText = retrievedChunks.length > 0
     ? retrievedChunks
@@ -34,10 +41,19 @@ export function buildFollowUpUserPrompt(params: {
 
   const unresolvedFloorCoach = floorCoachOutput?.unresolved?.map((u) => `- Question: "${u.question}" | Reason: ${u.reason}`).join('\n') || 'None';
 
+  const shopperHistoryText = shopperHistory?.hasAuthorizedHistory
+    ? `\nAUTHORIZED SHOPPER HISTORY (Cross-Visit Continuity):
+- Prior Visits: ${shopperHistory.visitCount}
+- Previously Explored: ${shopperHistory.priorInterests.join(', ') || 'None'}
+- Prior Unresolved Objections: ${shopperHistory.unresolvedObjections.join('; ') || 'None'}
+- Prior Recommendations: ${shopperHistory.priorRecommendations.join('; ') || 'None'}
+`
+    : '';
+
   return `CONSENT & PERMISSIONS:
 - Has Consent: ${hasConsent ? 'YES' : 'NO'}
 - Permitted Channels: ${permittedChannels.length > 0 ? permittedChannels.join(', ') : 'NONE'}
-
+${shopperHistoryText}
 CUSTOMER INSIGHTS (from SignalAnalyst):
 - Summary: ${analystOutput.summary}
 - Product Interests: ${analystOutput.productInterests.map((p) => `${p.text} (${p.basis}${p.productRef ? `, ref: ${p.productRef}` : ''})`).join(', ') || 'None'}

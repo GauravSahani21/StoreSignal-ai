@@ -17,6 +17,7 @@ import {
   validateFactsUsedGrounding,
   type GuardValidationResult,
 } from '../guards/groundingGuards.js';
+import type { ShopperHistoryContext } from '../../database/repositories/types.js';
 import { AgentOutputInvalidError } from '../../errors/AppError.js';
 
 export interface FollowUpRunParams {
@@ -26,6 +27,7 @@ export interface FollowUpRunParams {
   permittedChannels?: string[];
   hasConsent?: boolean;
   customerSegments?: ParsedSegment[];
+  shopperHistory?: ShopperHistoryContext;
 }
 
 export interface FollowUpRunResult {
@@ -94,6 +96,7 @@ export class FollowUpOptimizerAgent {
       retrievedChunks,
       permittedChannels,
       hasConsent,
+      shopperHistory: params.shopperHistory,
     });
 
     let currentMessages = [

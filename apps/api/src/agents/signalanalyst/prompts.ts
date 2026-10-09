@@ -33,14 +33,34 @@ CRITICAL OPERATING RULES:
 Respond ONLY with a valid JSON object matching the requested schema.`;
 }
 
-export function buildSignalAnalystUserPrompt(segments: ParsedSegment[]): string {
+export function buildSignalAnalystUserPrompt(
+  segments: ParsedSegment[],
+  shopperHistory?: {
+    hasAuthorizedHistory: boolean;
+    visitCount: number;
+    priorInterests: string[];
+    unresolvedObjections: string[];
+    priorRecommendations: string[];
+    lastVisitDate?: string;
+  }
+): string {
   const formattedTranscript = segments
     .map((s) => `[${s.id}] (${s.speaker.toUpperCase()}): "${s.text}"`)
     .join('\n');
 
+  const historyText = shopperHistory?.hasAuthorizedHistory
+    ? `\n### AUTHORIZED SHOPPER HISTORY (Prior Visits):
+- Total Previous Visits: ${shopperHistory.visitCount}
+- Past Product Interests: ${shopperHistory.priorInterests.length > 0 ? shopperHistory.priorInterests.join(', ') : 'None'}
+- Past Unresolved Objections: ${shopperHistory.unresolvedObjections.length > 0 ? shopperHistory.unresolvedObjections.join('; ') : 'None'}
+- Past Recommendations: ${shopperHistory.priorRecommendations.length > 0 ? shopperHistory.priorRecommendations.join('; ') : 'None'}
+- Prior Visit Date: ${shopperHistory.lastVisitDate || 'Prior session'}
+`
+    : '';
+
   return `### ACTIVE SHOWROOM CONVERSATION:
 ${formattedTranscript}
-
+${historyText}
 Extract structured customer intelligence and observable intent signals from the dialogue above. Respond with valid JSON matching the schema.`;
 }
 

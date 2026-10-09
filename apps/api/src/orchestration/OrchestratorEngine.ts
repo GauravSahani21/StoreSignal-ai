@@ -13,6 +13,7 @@ import type { SignalAnalystOutput } from '../agents/signalanalyst/schema.js';
 import type { WorkflowRun, WorkflowState } from '../database/repositories/types.js';
 import { ConflictError, NotFoundError, ValidationError } from '../errors/AppError.js';
 import { globalConversationLock, ConversationLock } from './ConversationLock.js';
+import { ShopperProfileService } from '../shoppers/ShopperProfileService.js';
 
 export const ORCHESTRATOR_CONFIG_VERSION = '1.0.0';
 
@@ -29,6 +30,7 @@ export interface OrchestratorEngineOptions {
   repositories: Repositories;
   aiProvider: AIProvider;
   retrievalService: RetrievalService;
+  shopperProfileService?: ShopperProfileService;
   lock?: ConversationLock;
   timeoutMs?: number;
 }
@@ -37,6 +39,7 @@ export class OrchestratorEngine {
   private readonly repositories: Repositories;
   private readonly aiProvider: AIProvider;
   private readonly retrievalService: RetrievalService;
+  private readonly shopperProfileService: ShopperProfileService;
   private readonly lock: ConversationLock;
   private readonly defaultTimeoutMs: number;
 
@@ -44,6 +47,8 @@ export class OrchestratorEngine {
     this.repositories = options.repositories;
     this.aiProvider = options.aiProvider;
     this.retrievalService = options.retrievalService;
+    this.shopperProfileService =
+      options.shopperProfileService ?? new ShopperProfileService(this.repositories);
     this.lock = options.lock ?? globalConversationLock;
     this.defaultTimeoutMs = options.timeoutMs ?? 45000;
   }
@@ -158,10 +163,16 @@ export class OrchestratorEngine {
         payload: { parallelAgents: ['floor_coach', 'signal_analyst'] },
       });
 
+      // Fetch authorized shopper history context (cross-visit continuity)
+      const shopperHistory = await this.shopperProfileService.getAuthorizedContextForPipeline(
+        orgId,
+        conversationId
+      );
+
       // Run FloorCoach and SignalAnalyst in parallel via Promise.allSettled
       const [coachResultSettled, analystResultSettled] = await Promise.allSettled([
         floorCoachAgent.run(orgId, latestTranscript.segments),
-        signalAnalystAgent.run(latestTranscript.segments),
+        signalAnalystAgent.run(latestTranscript.segments, shopperHistory),
       ]);
 
       let coachOutput: FloorCoachOutput | null = null;
@@ -312,6 +323,7 @@ export class OrchestratorEngine {
             permittedChannels,
             hasConsent,
             customerSegments: latestTranscript.segments,
+            shopperHistory,
           });
 
           // Persist draft

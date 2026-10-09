@@ -19,11 +19,18 @@ import {
   ShieldCheck,
   Terminal,
   Upload,
+  User,
   UserCheck,
+  UserX,
   X,
   Cpu,
   Layers,
   RefreshCw,
+  ShoppingBag,
+  Trash2,
+  History,
+  Lock,
+  Tag,
 } from 'lucide-react';
 
 interface HealthStatus {
@@ -94,6 +101,54 @@ interface WorkflowRunData {
   }>;
 }
 
+interface ShopperProfileView {
+  shopper: {
+    id: string;
+    orgId: string;
+    externalCustomerId?: string | null;
+    contactHash?: string | null;
+    isIdentified: boolean;
+    hasConsent: boolean;
+  };
+  isAnonymous: boolean;
+  visitCount: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  interests: string[];
+  pastQuestions: Array<{
+    conversationId: string;
+    question: string;
+    date: string;
+  }>;
+  unresolvedObjections: Array<{
+    conversationId: string;
+    objectionType: string;
+    customerText: string;
+    date: string;
+  }>;
+  priorRecommendations: Array<{
+    conversationId: string;
+    recommendation: string;
+    date: string;
+  }>;
+  followUpHistory: Array<{
+    draftId: string;
+    channel: string;
+    status: string;
+    recommendedAction: string;
+    date: string;
+  }>;
+  outcomes: Array<{
+    id: string;
+    type: 'purchase' | 'missed_conversion' | 'no_response';
+    reason?: string;
+    value?: number;
+    recordedBy: string;
+    recordedAt: string;
+  }>;
+  hasActiveConsent: boolean;
+}
+
 export const App: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -105,6 +160,9 @@ export const App: React.FC = () => {
   const [ingestedConversation, setIngestedConversation] = useState<ConversationResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  // Tab navigation
+  const [activeTab, setActiveTab] = useState<'orchestration' | 'shopper'>('orchestration');
 
   // Follow-up Queue State
   const [drafts, setDrafts] = useState<FollowUpDraft[]>([]);
@@ -118,6 +176,15 @@ export const App: React.FC = () => {
   const [activeWorkflow, setActiveWorkflow] = useState<WorkflowRunData | null>(null);
   const [workflowEvents, setWorkflowEvents] = useState<WorkflowEventItem[]>([]);
   const [isProcessingWorkflow, setIsProcessingWorkflow] = useState(false);
+
+  // Shopper Profile State (Phase 10)
+  const [shopperProfile, setShopperProfile] = useState<ShopperProfileView | null>(null);
+  const [shopperExternalIdInput, setShopperExternalIdInput] = useState('CUST-8831');
+  const [isLinkingShopper, setIsLinkingShopper] = useState(false);
+  const [outcomeType, setOutcomeType] = useState<'purchase' | 'missed_conversion'>('purchase');
+  const [outcomeReason, setOutcomeReason] = useState('');
+  const [outcomeValue, setOutcomeValue] = useState<number>(84500);
+  const [isRecordingOutcome, setIsRecordingOutcome] = useState(false);
 
   // Timer for active recording simulation
   useEffect(() => {
@@ -147,6 +214,132 @@ export const App: React.FC = () => {
   useEffect(() => {
     void fetchHealth();
   }, []);
+
+  const fetchShopperProfile = async (conversationId: string) => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/conversations/${conversationId}/shopper`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data?.profile) {
+          setShopperProfile(json.data.profile);
+        } else {
+          setShopperProfile(null);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleResolveAndLinkShopper = async (anonymous = false) => {
+    if (!ingestedConversation) return;
+    setIsLinkingShopper(true);
+    setStatusMessage(null);
+    try {
+      const resolveRes = await fetch('http://localhost:3001/api/shoppers/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          anonymous
+            ? { anonymousId: `anon-${Date.now()}` }
+            : {
+                externalCustomerId: shopperExternalIdInput.trim() || 'CUST-8831',
+                hasConsent: true,
+                authorizer: 'advisor-neha-12',
+              }
+        ),
+      });
+      if (!resolveRes.ok) throw new Error('Failed to resolve shopper identity');
+      const resolveData = await resolveRes.json();
+      const shopper = resolveData.data;
+
+      const linkRes = await fetch(`http://localhost:3001/api/conversations/${ingestedConversation.conversation.id}/link-shopper`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shopperId: shopper.id,
+          basis: anonymous ? 'anonymous_session' : 'explicit_customer_id',
+          authorizer: 'advisor-neha-12',
+        }),
+      });
+      if (!linkRes.ok) throw new Error('Failed to link conversation to shopper');
+
+      await fetchShopperProfile(ingestedConversation.conversation.id);
+      setStatusMessage(`Shopper ${anonymous ? 'Anonymous' : shopper.externalCustomerId} successfully linked.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setStatusMessage(`Shopper link error: ${msg}`);
+    } finally {
+      setIsLinkingShopper(false);
+    }
+  };
+
+  const handleRecordOutcome = async () => {
+    if (!shopperProfile) return;
+    setIsRecordingOutcome(true);
+    setStatusMessage(null);
+    try {
+      const res = await fetch(`http://localhost:3001/api/shoppers/${shopperProfile.shopper.id}/outcomes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: ingestedConversation?.conversation.id,
+          type: outcomeType,
+          reason: outcomeReason || (outcomeType === 'purchase' ? 'Purchased Prithvi 110 Deluxe' : 'Price above budget'),
+          value: outcomeValue > 0 ? outcomeValue : (outcomeType === 'purchase' ? 84500 : undefined),
+          recordedBy: 'advisor-neha-12',
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to record interaction outcome');
+      if (ingestedConversation) {
+        await fetchShopperProfile(ingestedConversation.conversation.id);
+      }
+      setStatusMessage(`Outcome recorded: ${outcomeType.toUpperCase()}`);
+      setOutcomeReason('');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setStatusMessage(`Outcome error: ${msg}`);
+    } finally {
+      setIsRecordingOutcome(false);
+    }
+  };
+
+  const handleRevokeConsent = async () => {
+    if (!shopperProfile) return;
+    try {
+      const res = await fetch(`http://localhost:3001/api/shoppers/${shopperProfile.shopper.id}/revoke-consent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actor: 'advisor-neha-12' }),
+      });
+      if (res.ok) {
+        if (ingestedConversation) await fetchShopperProfile(ingestedConversation.conversation.id);
+        setStatusMessage('Customer consent revoked. History usage immediately stopped.');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setStatusMessage(`Revoke consent error: ${msg}`);
+    }
+  };
+
+  const handleDeleteShopper = async () => {
+    if (!shopperProfile) return;
+    if (!confirm('Erase this shopper profile and unlink derived records (Right to Erasure)?')) return;
+    try {
+      const res = await fetch(`http://localhost:3001/api/shoppers/${shopperProfile.shopper.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actor: 'advisor-neha-12' }),
+      });
+      if (res.ok) {
+        setShopperProfile(null);
+        setStatusMessage('Shopper profile permanently erased (Right to Erasure).');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setStatusMessage(`Erasure error: ${msg}`);
+    }
+  };
 
   const handleIngestTranscript = async () => {
     if (!consentGranted) {
@@ -187,6 +380,9 @@ export const App: React.FC = () => {
           method: 'verbal',
         }),
       });
+
+      // Automatically check for linked shopper profile
+      await fetchShopperProfile(data.conversation.id);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setStatusMessage(`Ingestion error: ${message}`);
@@ -360,15 +556,28 @@ export const App: React.FC = () => {
             <h1 className="text-sm font-semibold tracking-tight text-white flex items-center gap-2">
               StoreSignal AI
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
-                Phase 8 • Governed Drafts
+                Phase 10 • Shopper Profile &amp; Continuity
               </span>
             </h1>
-            <p className="text-xs text-slate-400">Agentic Physical-Retail Intelligence &amp; Governed Outbound Queue</p>
+            <p className="text-xs text-slate-400">Agentic Physical-Retail Intelligence &amp; Cross-Visit Shopper Memory</p>
           </div>
         </div>
 
-        {/* API Health indicator */}
-        <div className="flex items-center gap-4 text-xs font-mono">
+        {/* API Health indicator & Shopper Pill */}
+        <div className="flex items-center gap-3 text-xs font-mono">
+          {shopperProfile && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800">
+              <User className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-slate-300">
+                {shopperProfile.isAnonymous
+                  ? 'Anonymous Session'
+                  : `Shopper: ${shopperProfile.shopper.externalCustomerId}`}
+              </span>
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold">
+                Visit #{shopperProfile.visitCount}
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800">
             <Activity className={`w-3.5 h-3.5 ${health ? 'text-emerald-400 animate-pulse' : 'text-amber-400'}`} />
             <span className="text-slate-300">
@@ -491,6 +700,45 @@ export const App: React.FC = () => {
 
           {/* Right Column: Follow-Up Drafts Queue & Addressable Segments */}
           <div className="lg:col-span-7 space-y-6">
+            {/* Tab navigation */}
+            <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+              <button
+                onClick={() => setActiveTab('orchestration')}
+                className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+                  activeTab === 'orchestration'
+                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Multi-Agent Workflow &amp; Drafts
+              </button>
+              <button
+                onClick={() => setActiveTab('shopper')}
+                className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
+                  activeTab === 'shopper'
+                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <UserCheck className="w-3.5 h-3.5 text-purple-400" />
+                Shopper Profile &amp; Continuity
+                {shopperProfile && (
+                  <span
+                    className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                      shopperProfile.isAnonymous
+                        ? 'bg-slate-800 text-slate-400'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    }`}
+                  >
+                    {shopperProfile.isAnonymous ? 'Anon' : shopperProfile.shopper.externalCustomerId}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {activeTab === 'orchestration' && (
+              <>
             {/* Multi-Agent Orchestration & Trace Card */}
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
               <div className="flex items-center justify-between">
@@ -841,6 +1089,326 @@ export const App: React.FC = () => {
                 </div>
               )}
             </div>
+            </>
+            )}
+
+            {activeTab === 'shopper' && (
+              <div className="space-y-6">
+                {/* Shopper Identity & Linking Card */}
+                <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                        <User className="w-4 h-4 text-purple-400" />
+                        Shopper Identity Resolution &amp; Linking
+                      </h2>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Permitted explicit identifiers (external customer ID / consented contact hash) or anonymous session. Zero fuzzy identity guessing.
+                      </p>
+                    </div>
+                  </div>
+
+                  {!shopperProfile ? (
+                    <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                      <p className="text-xs text-slate-300">
+                        {ingestedConversation
+                          ? 'No shopper profile is currently linked to this conversation session. Resolve an explicit customer ID or provision an isolated anonymous session:'
+                          : 'Ingest a conversation first to link a customer profile.'}
+                      </p>
+                      {ingestedConversation && (
+                        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                          <input
+                            type="text"
+                            value={shopperExternalIdInput}
+                            onChange={(e) => setShopperExternalIdInput(e.target.value)}
+                            placeholder="e.g. CUST-8831"
+                            className="px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 flex-1 font-mono"
+                          />
+                          <button
+                            onClick={() => handleResolveAndLinkShopper(false)}
+                            disabled={isLinkingShopper}
+                            className="py-2 px-4 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:bg-slate-800"
+                          >
+                            {isLinkingShopper ? 'Linking...' : 'Link Customer ID'}
+                          </button>
+                          <button
+                            onClick={() => handleResolveAndLinkShopper(true)}
+                            disabled={isLinkingShopper}
+                            className="py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition disabled:opacity-50"
+                          >
+                            Link as Anonymous Session
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Profile Overview Banner */}
+                      <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80 space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm font-semibold text-white">
+                              {shopperProfile.isAnonymous
+                                ? 'Anonymous Session'
+                                : shopperProfile.shopper.externalCustomerId}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
+                                shopperProfile.isAnonymous
+                                  ? 'bg-slate-800 text-slate-400'
+                                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              }`}
+                            >
+                              {shopperProfile.isAnonymous ? 'Isolated Anon Session' : 'Identified Customer'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-indigo-600/20 text-indigo-300 border border-indigo-500/30">
+                              Visit #{shopperProfile.visitCount}
+                            </span>
+                            {shopperProfile.visitCount > 1 && (
+                              <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                                <History className="w-3 h-3 text-purple-400" /> Returning Visitor (+8 Rubric Weight)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
+                          <div>
+                            <span className="text-slate-500 block text-[10px] uppercase">Shopper ID</span>
+                            <span className="text-slate-300 font-mono text-[11px] truncate block" title={shopperProfile.shopper.id}>
+                              {shopperProfile.shopper.id}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px] uppercase">First Seen</span>
+                            <span className="text-slate-300 font-mono text-[11px]">
+                              {new Date(shopperProfile.firstSeenAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px] uppercase">Last Seen</span>
+                            <span className="text-slate-300 font-mono text-[11px]">
+                              {new Date(shopperProfile.lastSeenAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px] uppercase">Consent Status</span>
+                            <span
+                              className={`font-semibold flex items-center gap-1 ${
+                                shopperProfile.hasActiveConsent ? 'text-emerald-400' : 'text-rose-400'
+                              }`}
+                            >
+                              {shopperProfile.hasActiveConsent ? (
+                                <>
+                                  <ShieldCheck className="w-3 h-3" /> Active Attested
+                                </>
+                              ) : (
+                                <>
+                                  <ShieldAlert className="w-3 h-3" /> Consent Revoked
+                                </>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cross-Visit Memory Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Extracted Interests */}
+                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <Tag className="w-3.5 h-3.5 text-indigo-400" /> Extracted Interests
+                          </h3>
+                          {shopperProfile.interests.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {shopperProfile.interests.map((interest, i) => (
+                                <span
+                                  key={i}
+                                  className="px-2 py-0.5 rounded-md text-xs bg-indigo-500/10 text-indigo-300 border border-indigo-500/20"
+                                >
+                                  {interest}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500 italic">No explicit interests recorded yet.</p>
+                          )}
+                        </div>
+
+                        {/* Unresolved Objections */}
+                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Unresolved Objections
+                          </h3>
+                          {shopperProfile.unresolvedObjections.length > 0 ? (
+                            <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                              {shopperProfile.unresolvedObjections.map((obj, i) => (
+                                <div key={i} className="p-2 rounded bg-slate-900 border border-slate-800 text-xs">
+                                  <span className="font-semibold text-amber-300 capitalize">{obj.objectionType}: </span>
+                                  <span className="text-slate-300">&ldquo;{obj.customerText}&rdquo;</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500 italic">No unresolved objections from prior visits.</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Past Questions & Recommendations */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <MessageSquare className="w-3.5 h-3.5 text-emerald-400" /> Questions Across Visits
+                          </h3>
+                          {shopperProfile.pastQuestions.length > 0 ? (
+                            <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                              {shopperProfile.pastQuestions.map((q, i) => (
+                                <div key={i} className="p-2 rounded bg-slate-900 border border-slate-800 text-xs text-slate-300">
+                                  &bull; {q.question}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500 italic">No recorded past questions.</p>
+                          )}
+                        </div>
+
+                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" /> Prior Vehicle Recommendations
+                          </h3>
+                          {shopperProfile.priorRecommendations.length > 0 ? (
+                            <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                              {shopperProfile.priorRecommendations.map((r, i) => (
+                                <div key={i} className="p-2 rounded bg-slate-900 border border-slate-800 text-xs text-slate-300">
+                                  &bull; {r.recommendation}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500 italic">No prior recommendations on file.</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Interaction Outcome Recording */}
+                      <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                        <h3 className="text-xs font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                          <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" /> Record Physical-Retail Interaction Outcome
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Record real dealership outcomes to feed the store event stream (emits PURCHASE_RECORDED or MISSED_CONVERSION_RECORDED).
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                          <div>
+                            <label className="text-[10px] text-slate-400 uppercase block mb-1">Outcome Type</label>
+                            <select
+                              value={outcomeType}
+                              onChange={(e) => setOutcomeType(e.target.value as 'purchase' | 'missed_conversion')}
+                              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="purchase">Purchase</option>
+                              <option value="missed_conversion">Missed Conversion</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-slate-400 uppercase block mb-1">Reason / Notes</label>
+                            <input
+                              type="text"
+                              value={outcomeReason}
+                              onChange={(e) => setOutcomeReason(e.target.value)}
+                              placeholder={outcomeType === 'purchase' ? 'Purchased Prithvi 110 Deluxe' : 'Price above budget'}
+                              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-slate-400 uppercase block mb-1">Value (₹ INR)</label>
+                            <input
+                              type="number"
+                              value={outcomeValue}
+                              onChange={(e) => setOutcomeValue(Number(e.target.value))}
+                              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end pt-1">
+                          <button
+                            onClick={handleRecordOutcome}
+                            disabled={isRecordingOutcome}
+                            className="py-1.5 px-4 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 disabled:opacity-50"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            {isRecordingOutcome ? 'Recording...' : 'Record Outcome & Emit Event'}
+                          </button>
+                        </div>
+
+                        {shopperProfile.outcomes.length > 0 && (
+                          <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                            <span className="text-[11px] font-semibold text-slate-400 uppercase">Recorded Outcomes History</span>
+                            <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                              {shopperProfile.outcomes.map((out) => (
+                                <div
+                                  key={out.id}
+                                  className="p-2 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between text-xs"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                                        out.type === 'purchase'
+                                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                      }`}
+                                    >
+                                      {out.type}
+                                    </span>
+                                    <span className="text-slate-200">{out.reason || 'No reason provided'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 font-mono text-[11px] text-slate-400">
+                                    {out.value && <span className="text-emerald-400">₹{out.value.toLocaleString()}</span>}
+                                    <span>by {out.recordedBy}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Privacy & Governance Actions */}
+                      <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div className="space-y-0.5">
+                          <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                            <Lock className="w-3.5 h-3.5 text-indigo-400" /> Customer Privacy Controls
+                          </span>
+                          <p className="text-slate-400 text-[11px]">
+                            Enforce right to erasure or immediate consent revocation in compliance with DPDP/GDPR.
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={handleRevokeConsent}
+                            className="py-1.5 px-3 rounded-lg text-xs font-medium bg-amber-600/20 text-amber-300 border border-amber-500/30 hover:bg-amber-600/30 transition flex items-center gap-1"
+                          >
+                            <UserX className="w-3.5 h-3.5" /> Revoke Consent
+                          </button>
+                          <button
+                            onClick={handleDeleteShopper}
+                            className="py-1.5 px-3 rounded-lg text-xs font-medium bg-rose-600/20 text-rose-300 border border-rose-500/30 hover:bg-rose-600/30 transition flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Erase Profile
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Addressable Dialogue Segments Card */}
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">

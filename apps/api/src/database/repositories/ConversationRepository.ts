@@ -12,6 +12,7 @@ export interface CreateConversationParams {
   source: 'transcript_import' | 'audio_upload' | 'mic_recording';
   language?: string;
   status?: 'ingested' | 'processing' | 'completed' | 'failed';
+  retentionUntil?: string;
   isDemo?: boolean;
 }
 
@@ -48,6 +49,7 @@ export class MemoryConversationRepository implements IConversationRepository {
       source: params.source,
       language: params.language || 'en',
       status: params.status || 'ingested',
+      retentionUntil: params.retentionUntil,
       isDemo: Boolean(params.isDemo),
       createdAt: now,
       updatedAt: now,

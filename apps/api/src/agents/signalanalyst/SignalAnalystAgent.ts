@@ -1,4 +1,5 @@
 import type { ParsedSegment } from '../../conversations/segmenter.js';
+import type { ShopperHistoryContext } from '../../database/repositories/types.js';
 import { AgentOutputInvalidError } from '../../errors/AppError.js';
 import type { AIProvider } from '../../providers/ai/types.js';
 import { IntentScorer, type IntentAssessment } from '../../scoring/IntentScorer.js';
@@ -45,12 +46,15 @@ export class SignalAnalystAgent {
     this.maxRetries = config.maxRetries ?? 2;
   }
 
-  async run(segments: ParsedSegment[]): Promise<SignalAnalystResult> {
+  async run(
+    segments: ParsedSegment[],
+    shopperHistory?: ShopperHistoryContext
+  ): Promise<SignalAnalystResult> {
     const startTime = Date.now();
     const customerSegments = segments.filter((s) => s.speaker === 'customer');
 
     const systemPrompt = buildSignalAnalystSystemPrompt();
-    const userPrompt = buildSignalAnalystUserPrompt(segments);
+    const userPrompt = buildSignalAnalystUserPrompt(segments, shopperHistory);
 
     let currentMessages = [
       { role: 'system' as const, content: systemPrompt },
@@ -147,6 +151,24 @@ export class SignalAnalystAgent {
           evidence: sig.evidence,
         };
       });
+
+      // If authorized shopper history confirms a returning visitor, ensure returning_visit is counted (+8)
+      if (shopperHistory?.isReturningVisitor) {
+        const existing = evaluatedSignals.find((s) => s.signalId === 'returning_visit');
+        if (existing) {
+          existing.present = true;
+          existing.isValid = true;
+        } else {
+          evaluatedSignals.push({
+            signalId: 'returning_visit',
+            present: true,
+            isValid: true,
+            evidence: customerSegments.length > 0
+              ? [{ segmentId: customerSegments[0]!.id, quote: customerSegments[0]!.text.slice(0, 50) }]
+              : [],
+          });
+        }
+      }
 
       const intentAssessment = this.intentScorer.evaluate(evaluatedSignals, customerSegments);
 
