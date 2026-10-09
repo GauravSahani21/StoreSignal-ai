@@ -8,8 +8,8 @@ This document tracks the verified completion of each phase in accordance with th
 |---|---|---|---|---|---|---|
 | **Phase 1: Project Foundation** | PASSED | 2026-10-09 | bad5d28 | Fastify server, /health endpoint, Zod config validation, safe error envelopes, React+Vite build, Postgres docker compose | Live external DB calls (schema deferred to Phase 3) | Strict TypeScript, zero leaked secrets, health route returns 200 with no secrets. |
 | **Phase 2: OpenRouter Connection** | BLOCKED | 2026-10-09 | dd19b0e | - | Live OpenRouter verification | Centralized AIProvider, error taxonomy, timeouts, and mocked unit/integration tests passed (25/25). Awaiting OPENROUTER_API_KEY for live gate. |
-| **Phase 3: Database & Conversation Ingestion** | NOT STARTED | - | - | - | - | Migrations, org-scoped repositories, transcript segmentation, consent record. |
-| **Phase 4: Speech-to-Text** | NOT STARTED | - | - | - | - | Audio ingestion, STT provider, browser recording UI, language evaluation. |
+| **Phase 3: Database & Conversation Ingestion** | PASSED | 2026-10-09 | 35a094b | Repositories, segmentation, consent enforcement, seeding | - | Full schema, org_id tenant isolation, stable segment IDs, idempotent seed. |
+| **Phase 4: Speech-to-Text** | IN PROGRESS | 2026-10-09 | - | - | - | Audio ingestion, STT provider, browser recording UI, language evaluation. |
 | **Phase 5: Retail Knowledge Retrieval (RAG)** | NOT STARTED | - | - | - | - | Ingestion, chunking, pgvector semantic search, seeded catalogue, deliberate gaps. |
 | **Phase 6: FloorCoach Agent** | NOT STARTED | - | - | - | - | Sales coach prompts, grounding guards, source citations, abstention on gaps. |
 | **Phase 7: SignalAnalyst Agent & Scoring** | NOT STARTED | - | - | - | - | Shopper intelligence, explicit vs inferred, deterministic intent rubric engine. |
