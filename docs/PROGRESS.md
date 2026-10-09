@@ -20,7 +20,7 @@ This document tracks the verified completion of each phase in accordance with th
 | **Phase 12: AI Evaluation Harness** | PASSED | 2026-10-09 | HEAD | Golden dataset (22 transcripts), 100% intent accuracy, 100% grounding, 100% gap abstention, 100% consent & human approval compliance, latency/token/cost telemetry | - | CLI runner `npm run eval`, JSON/MD reports, automated Vitest suite. |
 | **Phase 13: Experimentation & Optimization** | PASSED | 2026-10-09 | HEAD | Deterministic SHA-256 assignment, Wilson 95% CI, two-proportion z-tests, min-sample gating, CSV ingestion, ExperimentationDashboard UI | - | 11/11 tests passing, zero outbound send paths, bandit architecture specified. |
 | **Phase 14: Authentication, Authorization, Deployment** | PASSED | 2026-10-09 | HEAD | Scrypt hashing, constant-time verification, rotating refresh tokens, RBAC in code, multi-tenant isolation, multi-stage Dockerfiles, Compose orchestration | - | 7/7 tests passing, threat model (docs/security.md), deployment guide (docs/deployment.md). |
-| **Phase 15: Portfolio Packaging** | NOT STARTED | - | - | - | - | Polished README, architecture docs, demo script, verification checklist. |
+| **Phase 15: Portfolio Packaging** | PASSED | 2026-10-09 | HEAD | One-command seeder (`npm run demo:seed`), architecture specification (`docs/architecture.md`), click-by-click demo script (`docs/demo-script.md`), comprehensive README, MIT License | - | Production-ready packaging, all 15 phases completed with full evidence and zero regressions. |
 
 ---
 
@@ -40,6 +40,7 @@ This document tracks the verified completion of each phase in accordance with th
 - [ADR 012: AI Evaluation Harness, Golden Dataset, and Continuous Quality Gates](adr/012-ai-evaluation-harness.md)
 - [ADR 013: Campaign Experimentation, Deterministic Variant Assignment, and Contextual Bandit Architecture](adr/013-campaign-experimentation-and-bandit-design.md)
 - [ADR 014: Authentication, Role-Based Access Control (RBAC), and Production Deployment](adr/014-authentication-rbac-and-production-deployment.md)
+- [ADR 015: Portfolio Packaging, System Verification, and Final Sign-Off](adr/015-portfolio-packaging-and-system-verification.md)
 
 ---
 

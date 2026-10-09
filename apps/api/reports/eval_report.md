@@ -1,7 +1,7 @@
 # StoreSignal AI — AI Evaluation Report
 
-**Run ID:** `eval-f465876b-9d7f-401b-934d-bd1cd220d138`  
-**Timestamp:** 2026-10-09T09:36:13.366Z  
+**Run ID:** `eval-ec7b72c7-39cb-4308-9c0c-535e924b8640`  
+**Timestamp:** 2026-10-09T10:05:21.695Z  
 **Overall Status:** ✅ PASSED  
 
 ---

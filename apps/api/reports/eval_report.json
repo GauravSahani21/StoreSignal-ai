@@ -1,6 +1,6 @@
 {
-  "runId": "eval-f465876b-9d7f-401b-934d-bd1cd220d138",
-  "timestamp": "2026-10-09T09:36:13.366Z",
+  "runId": "eval-ec7b72c7-39cb-4308-9c0c-535e924b8640",
+  "timestamp": "2026-10-09T10:05:21.695Z",
   "totalCases": 22,
   "passedCases": 22,
   "failedCases": 0,
@@ -26,7 +26,7 @@
       "name": "Prithvi 110 High-Mileage Daily Commuter",
       "category": "high_intent",
       "passed": true,
-      "durationMs": 9,
+      "durationMs": 7,
       "tokensUsed": 1620,
       "costUsd": 0.0031,
       "metrics": {
@@ -202,7 +202,7 @@
       "name": "Comparison: Agni 125 vs Vayu 160R Performance",
       "category": "model_comparison",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 2,
       "tokensUsed": 1620,
       "costUsd": 0.0031,
       "metrics": {
@@ -246,7 +246,7 @@
       "name": "Deliberate Gap: Retrofit CNG Dual-Fuel Kit",
       "category": "deliberate_knowledge_gap",
       "passed": true,
-      "durationMs": 0,
+      "durationMs": 1,
       "tokensUsed": 1620,
       "costUsd": 0.0031,
       "metrics": {
@@ -268,7 +268,7 @@
       "name": "Deliberate Gap: Out-of-State EV Government Subsidy",
       "category": "deliberate_knowledge_gap",
       "passed": true,
-      "durationMs": 2,
+      "durationMs": 1,
       "tokensUsed": 1620,
       "costUsd": 0.0031,
       "metrics": {
@@ -312,7 +312,7 @@
       "name": "Thin Dialogue: Showroom Hours Inquiry",
       "category": "thin_dialogue",
       "passed": true,
-      "durationMs": 0,
+      "durationMs": 1,
       "tokensUsed": 1620,
       "costUsd": 0.0031,
       "metrics": {
@@ -334,7 +334,7 @@
       "name": "Window Shopper: Waiting for Friend",
       "category": "window_shopper",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 0,
       "tokensUsed": 1620,
       "costUsd": 0.0031,
       "metrics": {
@@ -466,7 +466,7 @@
       "name": "Service Center Inquiry & Warranty Repair Walk-In",
       "category": "low_intent",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 0,
       "tokensUsed": 1620,
       "costUsd": 0.0031,
       "metrics": {
@@ -488,7 +488,7 @@
       "name": "Aggressive Cash Discount Negotiation",
       "category": "price_objection",
       "passed": true,
-      "durationMs": 0,
+      "durationMs": 1,
       "tokensUsed": 1620,
       "costUsd": 0.0031,
       "metrics": {

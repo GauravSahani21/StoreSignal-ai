@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "test": "vitest run",
-    "eval": "tsx src/eval/runner.ts"
+    "eval": "tsx src/eval/runner.ts",
+    "demo:seed": "tsx src/scripts/seed.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
