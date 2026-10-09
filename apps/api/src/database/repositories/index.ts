@@ -14,12 +14,17 @@ import {
   type IShopperRepository,
   MemoryShopperRepository,
 } from './ShopperRepository.js';
+import {
+  type IAgentRunRepository,
+  MemoryAgentRunRepository,
+} from './AgentRunRepository.js';
 
 export interface Repositories {
   conversations: IConversationRepository;
   consents: IConsentRepository;
   products: IProductRepository;
   shoppers: IShopperRepository;
+  agentRuns: IAgentRunRepository;
 }
 
 export function createRepositories(): Repositories {
@@ -28,6 +33,7 @@ export function createRepositories(): Repositories {
     consents: new MemoryConsentRepository(),
     products: new MemoryProductRepository(),
     shoppers: new MemoryShopperRepository(),
+    agentRuns: new MemoryAgentRunRepository(),
   };
 }
 
@@ -36,3 +42,4 @@ export * from './ConversationRepository.js';
 export * from './ConsentRepository.js';
 export * from './ProductRepository.js';
 export * from './ShopperRepository.js';
+export * from './AgentRunRepository.js';

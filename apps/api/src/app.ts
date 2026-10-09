@@ -17,6 +17,7 @@ import { RetrievalService } from './rag/retrieval/RetrievalService.js';
 import { seedKnowledgeBase } from './rag/seedKnowledge.js';
 import { aiRoutes } from './routes/ai.js';
 import { audioRoutes } from './routes/audio.js';
+import { coachRoutes } from './routes/coach.js';
 import { consentRoutes } from './routes/consents.js';
 import { conversationRoutes } from './routes/conversations.js';
 import { healthRoutes } from './routes/health.js';
@@ -145,6 +146,11 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   });
   await app.register(knowledgeRoutes, {
     knowledgeStore,
+    retrievalService,
+  });
+  await app.register(coachRoutes, {
+    repositories,
+    aiProvider,
     retrievalService,
   });
 
