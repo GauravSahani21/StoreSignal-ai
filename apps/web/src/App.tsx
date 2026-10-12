@@ -261,7 +261,7 @@ export const App: React.FC = () => {
   // NVIDIA NIM Test Runner State
   const [testPrompt, setTestPrompt] = useState('Explain the mileage and on-road pricing benefits of the Prithvi 110 for daily commuter riders.');
   const [testResponse, setTestResponse] = useState<string | null>(null);
-  const [isTestingNvidia, setIsTestingNvidia] = useState(false);
+  const [isTestingGroq, setIsTestingGroq] = useState(false);
 
   // Timer for active recording simulation
   useEffect(() => {
@@ -323,7 +323,7 @@ export const App: React.FC = () => {
   };
 
   const handleTestAiGeneration = async () => {
-    setIsTestingNvidia(true);
+    setIsTestingGroq(true);
     setTestResponse(null);
     try {
       const res = await fetch('http://localhost:3001/api/ai/chat', {
@@ -339,13 +339,13 @@ export const App: React.FC = () => {
       }
       const data = await res.json();
       setTestResponse(
-        `[${(aiHealth?.provider || 'Groq').toUpperCase()} Gateway • ${data.model} • ${data.latencyMs}ms]\n\n${data.response}`
+        `[GROQ LPU Gateway • ${data.model} • ${data.latencyMs}ms]\n\n${data.response}`
       );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Inference error';
-      setTestResponse(`Error executing prompt through AI Gateway: ${msg}`);
+      setTestResponse(`Error executing prompt through Groq Gateway: ${msg}`);
     } finally {
-      setIsTestingNvidia(false);
+      setIsTestingGroq(false);
     }
   };
 
@@ -863,7 +863,7 @@ export const App: React.FC = () => {
             </div>
             <button
               onClick={() => setStatusMessage(null)}
-              className="text-neutral-500 hover:text-neutral-900 p-1 transition"
+              className="text-neutral-400 hover:text-white p-1 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -966,9 +966,12 @@ export const App: React.FC = () => {
                       {[12, 28, 40, 18, 35, 48, 22, 14, 38, 25, 42, 16].map((h, i) => (
                         <div
                           key={i}
-                          style={{ height: isRecording ? `${h}px` : '6px' }}
-                          className={`w-1 rounded-full transition-all duration-150 ${
-                            isRecording ? 'bg-white animate-pulse' : 'bg-neutral-700'
+                          style={{
+                            height: isRecording ? `${h}px` : '6px',
+                            animationDelay: isRecording ? `${i * 80}ms` : '0ms',
+                          }}
+                          className={`w-1 rounded-full transition-all duration-300 ${
+                            isRecording ? 'bg-neutral-800 animate-pulse' : 'bg-neutral-300'
                           }`}
                         />
                       ))}
@@ -1063,7 +1066,7 @@ export const App: React.FC = () => {
                     <button
                       onClick={handleIngestTranscript}
                       disabled={isSubmitting || !consentGranted}
-                      className="w-full sm:w-auto py-2.5 px-6 rounded-xl text-xs font-bold bg-white hover:bg-neutral-200 disabled:bg-neutral-900 disabled:text-neutral-600 text-black shadow-sm transition flex items-center justify-center gap-2"
+                      className="w-full sm:w-auto py-2.5 px-6 rounded-xl text-xs font-bold bg-neutral-900 hover:bg-black disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed text-white shadow-sm transition flex items-center justify-center gap-2"
                     >
                       <Upload className="w-4 h-4" />
                       {isSubmitting ? 'Ingesting Dialogue...' : 'Ingest & Segment Dialogue'}
@@ -1961,13 +1964,7 @@ export const App: React.FC = () => {
                         <Cpu className="w-5 h-5" />
                       </div>
                       <div>
-                        <h2 className="text-base font-bold text-neutral-900">
-                          {aiHealth?.provider === 'groq'
-                            ? 'Groq LPU AI Gateway'
-                            : aiHealth?.provider === 'nvidia'
-                            ? 'NVIDIA NIM AI Gateway'
-                            : 'OpenRouter AI Gateway'}
-                        </h2>
+                        <h2 className="text-base font-bold text-neutral-900">Groq LPU AI Gateway</h2>
                         <p className="text-xs text-neutral-400">Ultra-fast live LLM inference</p>
                       </div>
                     </div>
@@ -1980,27 +1977,15 @@ export const App: React.FC = () => {
                   <div className="p-4 rounded-xl bg-neutral-50/70 border border-neutral-200/70 space-y-3 font-mono text-xs">
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
                       <span className="text-neutral-500 font-sans">Provider</span>
-                      <strong className="text-neutral-900 font-bold uppercase">{aiHealth?.provider || 'groq'}</strong>
+                      <strong className="text-neutral-900 font-bold uppercase">GROQ</strong>
                     </div>
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
                       <span className="text-neutral-500 font-sans">Base URL</span>
-                      <span className="text-neutral-700">
-                        {aiHealth?.provider === 'groq'
-                          ? 'https://api.groq.com/openai/v1'
-                          : aiHealth?.provider === 'nvidia'
-                          ? 'https://integrate.api.nvidia.com/v1'
-                          : 'https://openrouter.ai/api/v1'}
-                      </span>
+                      <span className="text-neutral-700">https://api.groq.com/openai/v1</span>
                     </div>
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
                       <span className="text-neutral-500 font-sans">Active Model</span>
-                      <span className="text-neutral-900 font-bold">
-                        {aiHealth?.provider === 'groq'
-                          ? 'openai/gpt-oss-120b'
-                          : aiHealth?.provider === 'nvidia'
-                          ? 'meta/llama-3.2-11b-vision-instruct'
-                          : 'google/gemini-2.0-flash-001'}
-                      </span>
+                      <span className="text-neutral-900 font-bold">openai/gpt-oss-120b</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-neutral-500 font-sans">Gateway Latency</span>
@@ -2015,7 +2000,7 @@ export const App: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-bold text-neutral-900 flex items-center gap-1.5">
                         <Terminal className="w-4 h-4" />
-                        Test {aiHealth?.provider === 'groq' ? 'Groq LPU' : 'AI'} Live Inference
+                        Test Groq LPU Live Inference
                       </div>
                       <button
                         onClick={pingAiGateway}
@@ -2026,7 +2011,7 @@ export const App: React.FC = () => {
                       </button>
                     </div>
                     <p className="text-xs text-neutral-500">
-                      Send a test prompt directly to the live {(aiHealth?.provider || 'Groq').toUpperCase()} gateway.
+                      Send a test prompt directly to the live GROQ gateway.
                     </p>
 
                     <input
@@ -2039,11 +2024,11 @@ export const App: React.FC = () => {
 
                     <button
                       onClick={handleTestAiGeneration}
-                      disabled={isTestingNvidia}
+                      disabled={isTestingGroq}
                       className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-neutral-900 text-white hover:bg-black font-semibold disabled:opacity-50 transition flex items-center justify-center gap-2 shadow-sm"
                     >
                       <Zap className="w-3.5 h-3.5" />
-                      {isTestingNvidia ? 'Executing on Groq...' : 'Execute Test Run'}
+                      {isTestingGroq ? 'Executing on Groq...' : 'Execute Test Run'}
                     </button>
 
                     {testResponse && (
@@ -2123,7 +2108,7 @@ export const App: React.FC = () => {
             <span>Enterprise Physical-Retail Intelligence Platform</span>
           </div>
           <div className="flex items-center gap-4 text-[11px] text-neutral-500 font-mono">
-            <span>Model: {aiHealth?.provider === 'groq' ? 'Groq LPU (GPT-OSS 120B)' : (aiHealth?.provider === 'nvidia' ? 'NVIDIA NIM Llama 3.2' : 'OpenRouter')}</span>
+            <span>Model: {aiHealth?.provider === 'groq' ? 'Groq LPU (GPT-OSS 120B)' : 'Groq LPU (GPT-OSS 120B)'}</span>
             <span>&bull;</span>
             <span>Dealership: Vayu Motors</span>
           </div>
