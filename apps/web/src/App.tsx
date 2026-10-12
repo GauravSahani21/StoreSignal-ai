@@ -231,7 +231,7 @@ export const App: React.FC = () => {
   const [liveInterimText, setLiveInterimText] = useState<string>('');
   const [audioLevels, setAudioLevels] = useState<number[]>([8, 12, 10, 14, 8, 12, 10, 14, 8, 12, 10, 14]);
   const [consentGranted, setConsentGranted] = useState(true);
-  const [rawText, setRawText] = useState(SAMPLE_TRANSCRIPTS.commuter);
+  const [rawText, setRawText] = useState('');
   const [ingestedConversation, setIngestedConversation] = useState<ConversationResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -262,7 +262,7 @@ export const App: React.FC = () => {
 
   // Shopper Profile State
   const [shopperProfile, setShopperProfile] = useState<ShopperProfileView | null>(null);
-  const [shopperExternalIdInput, setShopperExternalIdInput] = useState('CUST-8831');
+  const [shopperExternalIdInput, setShopperExternalIdInput] = useState('');
   const [isLinkingShopper, setIsLinkingShopper] = useState(false);
   const [outcomeType, setOutcomeType] = useState<'purchase' | 'missed_conversion'>('purchase');
   const [outcomeReason, setOutcomeReason] = useState('');

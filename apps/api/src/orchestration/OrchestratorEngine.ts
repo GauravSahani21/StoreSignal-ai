@@ -2,8 +2,8 @@ import type { Repositories } from '../database/repositories/index.js';
 import type { AIProvider } from '../providers/ai/types.js';
 import type { RetrievalService } from '../rag/retrieval/RetrievalService.js';
 import type { RetrievedChunk } from '../rag/retrieval/types.js';
-import { FloorCoachAgent } from '../agents/floorcoach/FloorCoachAgent.js';
-import { SignalAnalystAgent } from '../agents/signalanalyst/SignalAnalystAgent.js';
+import { FloorCoachAgent, type FloorCoachResult } from '../agents/floorcoach/FloorCoachAgent.js';
+import { SignalAnalystAgent, type SignalAnalystResult } from '../agents/signalanalyst/SignalAnalystAgent.js';
 import { FollowUpOptimizerAgent } from '../agents/followup/FollowUpOptimizerAgent.js';
 import { FLOOR_COACH_PROMPT_VERSION } from '../agents/floorcoach/prompts.js';
 import { SIGNAL_ANALYST_PROMPT_VERSION } from '../agents/signalanalyst/prompts.js';
@@ -182,11 +182,23 @@ export class OrchestratorEngine {
         conversationId
       );
 
-      // Run FloorCoach and SignalAnalyst in parallel via Promise.allSettled
-      const [coachResultSettled, analystResultSettled] = await Promise.allSettled([
-        floorCoachAgent.run(orgId, latestTranscript.segments),
-        signalAnalystAgent.run(latestTranscript.segments, shopperHistory),
-      ]);
+      // Run FloorCoach and SignalAnalyst sequentially to prevent burst token rate limit collisions on Groq
+      let coachResultSettled: PromiseSettledResult<FloorCoachResult>;
+      let analystResultSettled: PromiseSettledResult<SignalAnalystResult>;
+
+      try {
+        const coachVal = await floorCoachAgent.run(orgId, latestTranscript.segments);
+        coachResultSettled = { status: 'fulfilled', value: coachVal };
+      } catch (err) {
+        coachResultSettled = { status: 'rejected', reason: err };
+      }
+
+      try {
+        const analystVal = await signalAnalystAgent.run(latestTranscript.segments, shopperHistory);
+        analystResultSettled = { status: 'fulfilled', value: analystVal };
+      } catch (err) {
+        analystResultSettled = { status: 'rejected', reason: err };
+      }
 
       let coachOutput: FloorCoachOutput | null = null;
       let analystOutput: SignalAnalystOutput | null = null;

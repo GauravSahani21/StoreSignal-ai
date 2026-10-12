@@ -539,6 +539,13 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                   </tr>
                 );
               })}
+              {conversations.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-neutral-400 font-sans text-xs">
+                    No conversations recorded yet. Go to the <span className="font-semibold text-neutral-700">Audio Studio</span> to record live audio or ingest your first showroom dialogue!
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

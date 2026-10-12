@@ -51,6 +51,7 @@ export class OpenRouterClient {
   private readonly defaultTimeoutMs: number;
   private readonly baseUrl: string;
   private readonly fetchFn: typeof fetch;
+  private readonly maxRetries: number;
 
   constructor(config: OpenRouterClientConfig) {
     this.apiKey = config.apiKey;
@@ -59,23 +60,12 @@ export class OpenRouterClient {
     this.defaultTimeoutMs = config.defaultTimeoutMs;
     this.baseUrl = config.baseUrl ?? 'https://openrouter.ai/api/v1';
     this.fetchFn = config.fetchFn ?? fetch;
+    this.maxRetries = config.maxRetries ?? (process.env.NODE_ENV === 'test' ? 0 : 2);
   }
 
   async createChatCompletion(request: AIRequest): Promise<AIResponse> {
     const model = request.model ?? this.defaultModel;
     const startTime = Date.now();
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, this.defaultTimeoutMs);
-
-    // Chain caller's AbortSignal if provided
-    if (request.signal) {
-      request.signal.addEventListener('abort', () => {
-        controller.abort();
-      });
-    }
 
     const payload: Record<string, unknown> = {
       model,
@@ -99,29 +89,68 @@ export class OpenRouterClient {
       }
     }
 
-    let response: Response;
-    try {
-      response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': this.appUrl,
-          'X-Title': 'StoreSignal AI',
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-    } catch (err: unknown) {
-      clearTimeout(timeoutId);
-      if (err instanceof Error && err.name === 'AbortError') {
-        throw new AITimeoutError(`OpenRouter request timed out after ${this.defaultTimeoutMs}ms`);
+    let response!: Response;
+    let attempt = 0;
+
+    while (attempt <= this.maxRetries) {
+      const attemptController = new AbortController();
+      const attemptTimeout = setTimeout(() => {
+        attemptController.abort();
+      }, this.defaultTimeoutMs);
+
+      if (request.signal) {
+        request.signal.addEventListener('abort', () => {
+          attemptController.abort();
+        });
       }
-      throw new AINetworkError(
-        `Failed to connect to OpenRouter upstream gateway: ${err instanceof Error ? err.message : 'Network error'}`
-      );
-    } finally {
-      clearTimeout(timeoutId);
+
+      try {
+        response = await this.fetchFn(`${this.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': this.appUrl,
+            'X-Title': 'StoreSignal AI',
+          },
+          body: JSON.stringify(payload),
+          signal: attemptController.signal,
+        });
+      } catch (err: unknown) {
+        clearTimeout(attemptTimeout);
+        if (err instanceof Error && err.name === 'AbortError') {
+          throw new AITimeoutError(`OpenRouter request timed out after ${this.defaultTimeoutMs}ms`);
+        }
+        throw new AINetworkError(
+          `Failed to connect to OpenRouter upstream gateway: ${err instanceof Error ? err.message : 'Network error'}`
+        );
+      } finally {
+        clearTimeout(attemptTimeout);
+      }
+
+      // Check for rate limiting (429) retry
+      if (response.status === 429 && attempt < this.maxRetries) {
+        attempt++;
+        let waitMs = 2500 * attempt;
+        try {
+          const clone = response.clone();
+          const errJson = (await clone.json()) as { error?: { message?: string } };
+          const errMsg = errJson.error?.message || '';
+          const match = errMsg.match(/try again in ([\d.]+)s/i);
+          if (match && match[1]) {
+            const secs = parseFloat(match[1]);
+            if (!isNaN(secs) && secs > 0 && secs < 35) {
+              waitMs = Math.ceil(secs * 1000) + 600;
+            }
+          }
+        } catch {
+          // ignore parsing error
+        }
+        await new Promise((res) => setTimeout(res, waitMs));
+        continue;
+      }
+
+      break;
     }
 
     const latencyMs = Date.now() - startTime;

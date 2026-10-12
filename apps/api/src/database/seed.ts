@@ -2,13 +2,17 @@ import type { Repositories } from './repositories/index.js';
 
 export const DEFAULT_DEV_ORG_ID = 'org-vayu-motors-dev';
 
-export async function seedDatabase(repos: Repositories): Promise<{
+export async function seedDatabase(
+  repos: Repositories,
+  options?: { seedDemoData?: boolean }
+): Promise<{
   orgId: string;
   productCount: number;
   shopperCount: number;
   conversationCount?: number;
 }> {
   const orgId = DEFAULT_DEV_ORG_ID;
+  const shouldSeedDemo = options?.seedDemoData ?? true;
 
   // 1. Seed Products per Appendix D (Fictional brand: Vayu Motors)
   const productsToSeed = [
@@ -143,6 +147,16 @@ export async function seedDatabase(repos: Repositories): Promise<{
         isDemo: true,
       });
     }
+  }
+
+  // If demo data is disabled, start with completely clean slate (0 fake shoppers, 0 fake conversations)
+  if (!shouldSeedDemo) {
+    return {
+      orgId,
+      productCount: productsToSeed.length,
+      shopperCount: 0,
+      conversationCount: 0,
+    };
   }
 
   // 2. Seed Shoppers with explicit / anonymous profiles and varied consent
