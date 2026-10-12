@@ -151,6 +151,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
     options.aiProvider ??
     new OpenRouterProvider({
       apiKey: env.OPENROUTER_API_KEY,
+      baseUrl: env.OPENROUTER_BASE_URL,
       appUrl: env.APP_URL,
       model: env.OPENROUTER_MODEL,
       fallbackModel: env.OPENROUTER_FALLBACK_MODEL,

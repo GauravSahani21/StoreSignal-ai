@@ -181,7 +181,7 @@ export const App: React.FC = () => {
   const [workflowEvents, setWorkflowEvents] = useState<WorkflowEventItem[]>([]);
   const [isProcessingWorkflow, setIsProcessingWorkflow] = useState(false);
 
-  // Shopper Profile State (Phase 10)
+  // Shopper Profile State
   const [shopperProfile, setShopperProfile] = useState<ShopperProfileView | null>(null);
   const [shopperExternalIdInput, setShopperExternalIdInput] = useState('CUST-8831');
   const [isLinkingShopper, setIsLinkingShopper] = useState(false);
@@ -549,42 +549,42 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-white selection:text-black">
       {/* Top Navbar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
+      <header className="border-b border-neutral-800 bg-black/90 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
+          <div className="h-8 w-8 rounded-xl bg-neutral-900 border border-neutral-700 flex items-center justify-center text-white font-bold">
             SS
           </div>
           <div>
             <h1 className="text-sm font-semibold tracking-tight text-white flex items-center gap-2">
               StoreSignal AI
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
-                Phase 10 • Shopper Profile &amp; Continuity
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-900 text-neutral-300 border border-neutral-700 font-medium">
+                Retail Intelligence Platform
               </span>
             </h1>
-            <p className="text-xs text-slate-400">Agentic Physical-Retail Intelligence &amp; Cross-Visit Shopper Memory</p>
+            <p className="text-xs text-neutral-400">Agentic Physical-Retail Intelligence &amp; Cross-Visit Shopper Memory</p>
           </div>
         </div>
 
         {/* API Health indicator & Shopper Pill */}
         <div className="flex items-center gap-3 text-xs font-mono">
           {shopperProfile && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800">
-              <User className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-slate-300">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-neutral-800">
+              <User className="w-3.5 h-3.5 text-neutral-300" />
+              <span className="text-neutral-300">
                 {shopperProfile.isAnonymous
                   ? 'Anonymous Session'
                   : `Shopper: ${shopperProfile.shopper.externalCustomerId}`}
               </span>
-              <span className="px-1.5 py-0.2 rounded text-[10px] bg-indigo-500/20 text-indigo-300 font-semibold">
+              <span className="px-1.5 py-0.2 rounded text-[10px] bg-neutral-800 text-white font-semibold">
                 Visit #{shopperProfile.visitCount}
               </span>
             </div>
           )}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800">
-            <Activity className={`w-3.5 h-3.5 ${health ? 'text-emerald-400 animate-pulse' : 'text-amber-400'}`} />
-            <span className="text-slate-300">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 border border-neutral-800">
+            <Activity className={`w-3.5 h-3.5 ${health ? 'text-white animate-pulse' : 'text-neutral-500'}`} />
+            <span className="text-neutral-300">
               API: {health ? `${health.status} (${health.env})` : 'connecting...'}
             </span>
           </div>
@@ -595,11 +595,11 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
         {/* Banner notification */}
         {statusMessage && (
-          <div className="p-3.5 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-xs text-indigo-200 flex items-center justify-between animate-in fade-in">
+          <div className="p-3.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-200 flex items-center justify-between animate-in fade-in">
             <span>{statusMessage}</span>
             <button
               onClick={() => setStatusMessage(null)}
-              className="text-slate-400 hover:text-white transition"
+              className="text-neutral-400 hover:text-white transition"
             >
               &times;
             </button>
@@ -607,45 +607,39 @@ export const App: React.FC = () => {
         )}
 
         {/* Top-Level Navigation Bar */}
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+        <div className="flex items-center gap-2 border-b border-neutral-800 pb-3">
           <button
             onClick={() => setActiveTab('analytics')}
             className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
               activeTab === 'analytics'
-                ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-black font-bold shadow'
+                : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
             }`}
           >
-            <BarChart3 className="w-4 h-4 text-emerald-400" />
-            Retail Operations Dashboard (Phase 11)
-            <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-              AREAS A-F
-            </span>
+            <BarChart3 className="w-4 h-4" />
+            Retail Operations &amp; Analytics
           </button>
           <button
             onClick={() => setActiveTab('orchestration')}
             className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
               activeTab === 'orchestration'
-                ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-black font-bold shadow'
+                : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
             }`}
           >
-            <Layers className="w-4 h-4 text-indigo-400" />
+            <Layers className="w-4 h-4" />
             Live Dialogue &amp; Multi-Agent Studio
           </button>
           <button
             onClick={() => setActiveTab('experiments')}
             className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
               activeTab === 'experiments'
-                ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-black font-bold shadow'
+                : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
             }`}
           >
-            <FlaskConical className="w-4 h-4 text-purple-400" />
-            Campaign Experiments (Phase 13)
-            <span className="px-1.5 py-0.2 rounded text-[10px] bg-purple-500/20 text-purple-300 font-mono font-bold">
-              A/B STATS
-            </span>
+            <FlaskConical className="w-4 h-4" />
+            Campaign Experiments
           </button>
         </div>
 
@@ -658,39 +652,39 @@ export const App: React.FC = () => {
             {/* Left Column: Ingestion & Live Audio Capture */}
             <div className="lg:col-span-5 space-y-6">
             {/* Live Audio Ingestion Simulator Card */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
+            <div className="p-5 rounded-2xl bg-neutral-950 border border-neutral-800 shadow-xl space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                  <Mic className="w-4 h-4 text-indigo-400" />
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+                  <Mic className="w-4 h-4 text-white" />
                   Live Showroom Audio Capture
                 </h2>
                 {isRecording && (
-                  <span className="flex items-center gap-1.5 text-xs font-mono text-rose-400">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                  <span className="flex items-center gap-1.5 text-xs font-mono text-white">
+                    <span className="w-2 h-2 rounded-full bg-white animate-ping" />
                     REC {recordDuration}s
                   </span>
                 )}
               </div>
 
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-neutral-400 leading-relaxed">
                 Record real physical-retail sales conversations or import multi-turn transcripts. Customer consent is
                 mandatory before processing any dialogue.
               </p>
 
               {/* Consent Checkbox */}
-              <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <label className="flex items-start gap-3 p-3 rounded-xl bg-black border border-neutral-800 cursor-pointer hover:border-neutral-700 transition">
                 <input
                   type="checkbox"
                   checked={consentGranted}
                   onChange={(e) => setConsentGranted(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500/20 bg-slate-900"
+                  className="mt-0.5 rounded border-neutral-700 text-white focus:ring-0 bg-neutral-900"
                 />
                 <div className="text-xs space-y-0.5">
-                  <span className="font-medium text-slate-200 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="font-medium text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-white" />
                     Customer Consent Attested
                   </span>
-                  <p className="text-slate-400 text-[11px]">
+                  <p className="text-neutral-400 text-[11px]">
                     Customer gave verbal or written consent for conversation capture, analysis, and follow-up.
                   </p>
                 </div>
@@ -702,8 +696,8 @@ export const App: React.FC = () => {
                   onClick={() => setIsRecording(!isRecording)}
                   className={`flex-1 py-2 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-2 transition ${
                     isRecording
-                      ? 'bg-rose-600/20 text-rose-300 border border-rose-500/30 hover:bg-rose-600/30'
-                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                      ? 'bg-neutral-900 text-white border border-white hover:bg-neutral-800'
+                      : 'bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-700'
                   }`}
                 >
                   {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
@@ -713,10 +707,10 @@ export const App: React.FC = () => {
             </div>
 
             {/* Transcript Ingestion Input */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
+            <div className="p-5 rounded-2xl bg-neutral-950 border border-neutral-800 shadow-xl space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-indigo-400" />
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-white" />
                   Conversation Dialogue Input
                 </h2>
                 <button
@@ -725,7 +719,7 @@ export const App: React.FC = () => {
                       `[00:00:03] Advisor: Namaste! Welcome to Vayu Motors Indiranagar. Looking for a commuter bike today?\n[00:00:09] Customer: Yes, I travel 35 km daily to Whitefield. What is the mileage of the Prithvi 110?\n[00:00:16] Advisor: The Prithvi 110 gives 68 kmpl real-world mileage and has a 5-year warranty.\n[00:00:23] Customer: That sounds good! What is the on-road price with registration?`
                     )
                   }
-                  className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1"
+                  className="text-xs text-neutral-400 hover:text-white flex items-center gap-1"
                 >
                   <RotateCcw className="w-3 h-3" /> Reset Sample
                 </button>
@@ -735,14 +729,14 @@ export const App: React.FC = () => {
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
                 rows={7}
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/10 resize-none"
+                className="w-full rounded-xl bg-black border border-neutral-800 p-3 text-xs font-mono text-neutral-200 focus:outline-none focus:border-white resize-none"
                 placeholder="Paste raw conversation transcript here..."
               />
 
               <button
                 onClick={handleIngestTranscript}
                 disabled={isSubmitting || !consentGranted}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white shadow-lg shadow-indigo-600/20 transition flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold bg-white hover:bg-neutral-200 disabled:bg-neutral-900 disabled:text-neutral-600 text-black shadow transition flex items-center justify-center gap-2"
               >
                 <Upload className="w-3.5 h-3.5" />
                 {isSubmitting ? 'Ingesting & Normalizing...' : 'Ingest & Segment Dialogue'}
@@ -753,13 +747,13 @@ export const App: React.FC = () => {
           {/* Right Column: Follow-Up Drafts Queue & Addressable Segments */}
           <div className="lg:col-span-7 space-y-6">
             {/* Tab navigation */}
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <div className="flex items-center gap-2 border-b border-neutral-800 pb-2">
               <button
                 onClick={() => setActiveTab('orchestration')}
                 className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
                   activeTab === 'orchestration'
-                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-black font-bold shadow'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -769,18 +763,18 @@ export const App: React.FC = () => {
                 onClick={() => setActiveTab('shopper')}
                 className={`py-2 px-4 rounded-xl text-xs font-semibold flex items-center gap-2 transition ${
                   activeTab === 'shopper'
-                    ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-black font-bold shadow'
+                    : 'text-neutral-400 hover:text-white hover:bg-neutral-900'
                 }`}
               >
-                <UserCheck className="w-3.5 h-3.5 text-purple-400" />
+                <UserCheck className="w-3.5 h-3.5" />
                 Shopper Profile &amp; Continuity
                 {shopperProfile && (
                   <span
                     className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-mono ${
                       shopperProfile.isAnonymous
-                        ? 'bg-slate-800 text-slate-400'
-                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        ? 'bg-neutral-800 text-neutral-400'
+                        : 'bg-white text-black font-bold'
                     }`}
                   >
                     {shopperProfile.isAnonymous ? 'Anon' : shopperProfile.shopper.externalCustomerId}
@@ -792,14 +786,14 @@ export const App: React.FC = () => {
             {activeTab === 'orchestration' && (
               <>
             {/* Multi-Agent Orchestration & Trace Card */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
+            <div className="p-5 rounded-2xl bg-neutral-950 border border-neutral-800 shadow-xl space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-indigo-400" />
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-white" />
                     Multi-Agent Orchestration &amp; Tracing
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-neutral-400 mt-0.5">
                     Governed dependency graph: Retrieval → (Coach ∥ Analyst) → FollowUp Planning.
                   </p>
                 </div>
@@ -808,7 +802,7 @@ export const App: React.FC = () => {
                   <button
                     onClick={handleRunWorkflow}
                     disabled={isProcessingWorkflow}
-                    className="py-1.5 px-3 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white shadow transition flex items-center gap-1.5"
+                    className="py-1.5 px-3 rounded-xl text-xs font-semibold bg-white hover:bg-neutral-200 disabled:bg-neutral-900 disabled:text-neutral-600 text-black shadow transition flex items-center gap-1.5"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isProcessingWorkflow ? 'animate-spin' : ''}`} />
                     {isProcessingWorkflow ? 'Orchestrating...' : 'Execute Governed Workflow'}
@@ -821,93 +815,87 @@ export const App: React.FC = () => {
                   {/* Pipeline Step Progression */}
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 text-xs">
                     {/* Step 1: Retrieval */}
-                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                    <div className="p-3 rounded-xl bg-black border border-neutral-800 space-y-1">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-300">1. Retrieval</span>
-                        <span className="text-emerald-400 font-mono text-[10px]">
+                        <span className="font-semibold text-white">1. Retrieval</span>
+                        <span className="text-white font-mono text-[10px] font-bold">
                           {activeWorkflow.stepResults['retrieval']?.state || 'PENDING'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono">
+                      <div className="text-[11px] text-neutral-400 font-mono">
                         {activeWorkflow.stepResults['retrieval']?.durationMs ?? 0}ms
                       </div>
                     </div>
 
                     {/* Step 2: FloorCoach */}
-                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                    <div className="p-3 rounded-xl bg-black border border-neutral-800 space-y-1">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-300">2. FloorCoach</span>
+                        <span className="font-semibold text-white">2. FloorCoach</span>
                         <span
-                          className={`font-mono text-[10px] ${
+                          className={`font-mono text-[10px] font-bold ${
                             activeWorkflow.stepResults['floor_coach']?.state === 'SUCCEEDED'
-                              ? 'text-emerald-400'
-                              : 'text-amber-400'
+                              ? 'text-white'
+                              : 'text-neutral-400'
                           }`}
                         >
                           {activeWorkflow.stepResults['floor_coach']?.state || 'PENDING'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono">
+                      <div className="text-[11px] text-neutral-400 font-mono">
                         {activeWorkflow.stepResults['floor_coach']?.durationMs ?? 0}ms
                       </div>
                     </div>
 
                     {/* Step 3: SignalAnalyst */}
-                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                    <div className="p-3 rounded-xl bg-black border border-neutral-800 space-y-1">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-300">3. SignalAnalyst</span>
+                        <span className="font-semibold text-white">3. SignalAnalyst</span>
                         <span
-                          className={`font-mono text-[10px] ${
+                          className={`font-mono text-[10px] font-bold ${
                             activeWorkflow.stepResults['signal_analyst']?.state === 'SUCCEEDED'
-                              ? 'text-emerald-400'
-                              : 'text-amber-400'
+                              ? 'text-white'
+                              : 'text-neutral-400'
                           }`}
                         >
                           {activeWorkflow.stepResults['signal_analyst']?.state || 'PENDING'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono">
+                      <div className="text-[11px] text-neutral-400 font-mono">
                         {activeWorkflow.stepResults['signal_analyst']?.durationMs ?? 0}ms
                       </div>
                     </div>
 
                     {/* Step 4: FollowUpOptimizer */}
-                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                    <div className="p-3 rounded-xl bg-black border border-neutral-800 space-y-1">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-300">4. FollowUp</span>
+                        <span className="font-semibold text-white">4. FollowUp</span>
                         <span
-                          className={`font-mono text-[10px] ${
+                          className={`font-mono text-[10px] font-bold ${
                             activeWorkflow.stepResults['followup_optimizer']?.state === 'SUCCEEDED'
-                              ? 'text-emerald-400'
-                              : activeWorkflow.stepResults['followup_optimizer']?.state === 'SKIPPED'
-                                ? 'text-slate-400'
-                                : 'text-amber-400'
+                              ? 'text-white'
+                              : 'text-neutral-500'
                           }`}
                         >
                           {activeWorkflow.stepResults['followup_optimizer']?.state || 'PENDING'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono">
+                      <div className="text-[11px] text-neutral-400 font-mono">
                         {activeWorkflow.stepResults['followup_optimizer']?.durationMs ?? 0}ms
                       </div>
                     </div>
                   </div>
 
                   {/* Summary Bar */}
-                  <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/60 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-300">
-                      Workflow ID: <span className="text-indigo-400">{activeWorkflow.id}</span>
+                  <div className="p-3 rounded-xl bg-black border border-neutral-800 flex items-center justify-between text-xs font-mono">
+                    <span className="text-neutral-300">
+                      Workflow ID: <span className="text-white font-semibold">{activeWorkflow.id}</span>
                     </span>
-                    <span className="text-slate-400">Total Duration: {activeWorkflow.durationMs}ms</span>
+                    <span className="text-neutral-400">Total Duration: {activeWorkflow.durationMs}ms</span>
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
                         activeWorkflow.state === 'COMPLETED'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : activeWorkflow.state === 'AWAITING_APPROVAL'
-                            ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                            : activeWorkflow.state === 'PARTIAL'
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                          ? 'bg-white text-black font-bold'
+                          : 'bg-neutral-800 text-neutral-300 border border-neutral-700'
                       }`}
                     >
                       {activeWorkflow.state}
@@ -916,18 +904,18 @@ export const App: React.FC = () => {
 
                   {/* Trace Event Log */}
                   {workflowEvents.length > 0 && (
-                    <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
-                      <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    <div className="space-y-1.5 pt-2 border-t border-neutral-800">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
                         Execution Trace Events:
                       </div>
                       <div className="max-h-36 overflow-y-auto space-y-1 pr-1 font-mono text-[11px]">
                         {workflowEvents.map((evt) => (
                           <div
                             key={evt.id}
-                            className="p-1.5 rounded bg-slate-950 border border-slate-850 flex items-center justify-between text-slate-300"
+                            className="p-1.5 rounded bg-black border border-neutral-800 flex items-center justify-between text-neutral-300"
                           >
-                            <span className="text-indigo-400">{evt.eventType}</span>
-                            <span className="text-[10px] text-slate-500">
+                            <span className="text-white font-semibold">{evt.eventType}</span>
+                            <span className="text-[10px] text-neutral-500">
                               {new Date(evt.createdAt).toLocaleTimeString()}
                             </span>
                           </div>
@@ -937,9 +925,9 @@ export const App: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center space-y-2">
-                  <Cpu className="w-7 h-7 text-slate-600 mx-auto" />
-                  <p className="text-xs text-slate-400">
+                <div className="rounded-xl border border-dashed border-neutral-800 p-8 text-center space-y-2">
+                  <Cpu className="w-7 h-7 text-neutral-600 mx-auto" />
+                  <p className="text-xs text-neutral-400">
                     No active workflow run executed yet. Click &quot;Execute Governed Workflow&quot; to coordinate
                     Retrieval, FloorCoach, SignalAnalyst, and FollowUpOptimizer.
                   </p>
@@ -948,14 +936,14 @@ export const App: React.FC = () => {
             </div>
 
             {/* Follow-Up Governance Queue Card */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
+            <div className="p-5 rounded-2xl bg-neutral-950 border border-neutral-800 shadow-xl space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-emerald-400" />
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+                    <UserCheck className="w-4 h-4 text-white" />
                     Governed Follow-Up Approval Queue
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-neutral-400 mt-0.5">
                     Grounded drafts awaiting human approval. Automated dispatch is strictly disabled.
                   </p>
                 </div>
@@ -964,7 +952,7 @@ export const App: React.FC = () => {
                   <button
                     onClick={handleGenerateFollowUp}
                     disabled={isGeneratingDraft}
-                    className="py-1.5 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white shadow transition flex items-center gap-1.5"
+                    className="py-1.5 px-3 rounded-xl text-xs font-semibold bg-white hover:bg-neutral-200 disabled:bg-neutral-900 disabled:text-neutral-600 text-black shadow transition flex items-center gap-1.5"
                   >
                     <Send className="w-3 h-3" />
                     {isGeneratingDraft ? 'Synthesizing...' : 'Draft Follow-Up'}
@@ -980,19 +968,19 @@ export const App: React.FC = () => {
                     return (
                       <div
                         key={draft.id}
-                        className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3"
+                        className="p-4 rounded-xl bg-black border border-neutral-800 space-y-3"
                       >
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2">
-                            {draft.channel === 'email' && <Mail className="w-4 h-4 text-blue-400" />}
-                            {draft.channel === 'whatsapp' && <MessageSquare className="w-4 h-4 text-emerald-400" />}
-                            {draft.channel === 'call_task' && <Phone className="w-4 h-4 text-amber-400" />}
-                            {draft.channel === 'none' && <ShieldAlert className="w-4 h-4 text-rose-400" />}
+                            {draft.channel === 'email' && <Mail className="w-4 h-4 text-white" />}
+                            {draft.channel === 'whatsapp' && <MessageSquare className="w-4 h-4 text-white" />}
+                            {draft.channel === 'call_task' && <Phone className="w-4 h-4 text-white" />}
+                            {draft.channel === 'none' && <ShieldAlert className="w-4 h-4 text-neutral-500" />}
 
-                            <span className="font-semibold uppercase text-slate-200">
+                            <span className="font-semibold uppercase text-white">
                               Channel: {draft.channel}
                             </span>
-                            <span className="text-slate-500 font-mono text-[10px]">v{draft.version}</span>
+                            <span className="text-neutral-500 font-mono text-[10px]">v{draft.version}</span>
                           </div>
 
                           {/* Status Badge */}
@@ -1000,10 +988,10 @@ export const App: React.FC = () => {
                             <span
                               className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
                                 draft.status === 'approved'
-                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                  ? 'bg-white text-black font-bold'
                                   : draft.status === 'rejected'
-                                    ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                    : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                    ? 'bg-neutral-900 text-neutral-400 border border-neutral-800'
+                                    : 'bg-neutral-800 text-neutral-200 border border-neutral-700'
                               }`}
                             >
                               {draft.status}
@@ -1013,18 +1001,18 @@ export const App: React.FC = () => {
 
                         {/* Blocked Alert if Channel is None */}
                         {draft.blockedReason && (
-                          <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-800/40 text-xs text-rose-300 flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                          <div className="p-2.5 rounded-lg bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 text-neutral-400 shrink-0" />
                             <span>Outreach Blocked by Policy: {draft.blockedReason}</span>
                           </div>
                         )}
 
                         {/* Recommendation Context */}
-                        <div className="text-xs text-slate-300 space-y-1 bg-slate-900/50 p-3 rounded-lg border border-slate-800/60">
-                          <div className="font-medium text-indigo-300">
+                        <div className="text-xs text-neutral-300 space-y-1 bg-neutral-950 p-3 rounded-lg border border-neutral-800">
+                          <div className="font-medium text-white">
                             Action: {draft.recommendedAction}
                           </div>
-                          <div className="text-slate-400 text-[11px]">{draft.reason}</div>
+                          <div className="text-neutral-400 text-[11px]">{draft.reason}</div>
                         </div>
 
                         {/* Draft Subject / Message Content */}
@@ -1037,25 +1025,25 @@ export const App: React.FC = () => {
                                   value={editSubject}
                                   onChange={(e) => setEditSubject(e.target.value)}
                                   placeholder="Subject"
-                                  className="w-full text-xs p-2 rounded bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none"
+                                  className="w-full text-xs p-2 rounded bg-black border border-neutral-800 text-white focus:outline-none focus:border-white"
                                 />
                               )}
                               <textarea
                                 value={editMessage}
                                 onChange={(e) => setEditMessage(e.target.value)}
                                 rows={4}
-                                className="w-full text-xs p-2 rounded bg-slate-900 border border-slate-700 text-slate-200 font-sans focus:outline-none resize-none"
+                                className="w-full text-xs p-2 rounded bg-black border border-neutral-800 text-white font-sans focus:outline-none focus:border-white resize-none"
                               />
                               <div className="flex justify-end gap-2">
                                 <button
                                   onClick={() => setEditingDraftId(null)}
-                                  className="py-1 px-2.5 rounded text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1"
+                                  className="py-1 px-2.5 rounded text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-700 flex items-center gap-1"
                                 >
                                   <X className="w-3 h-3" /> Cancel
                                 </button>
                                 <button
                                   onClick={() => handleSaveEdit(draft.id)}
-                                  className="py-1 px-2.5 rounded text-xs bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1"
+                                  className="py-1 px-2.5 rounded text-xs bg-white hover:bg-neutral-200 text-black font-semibold flex items-center gap-1"
                                 >
                                   <Save className="w-3 h-3" /> Save Changes
                                 </button>
@@ -1064,11 +1052,11 @@ export const App: React.FC = () => {
                           ) : (
                             <div className="space-y-1.5">
                               {draft.subject && (
-                                <div className="text-xs font-semibold text-slate-200">
+                                <div className="text-xs font-semibold text-white">
                                   Subject: {draft.subject}
                                 </div>
                               )}
-                              <p className="text-xs text-slate-300 whitespace-pre-wrap bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+                              <p className="text-xs text-neutral-300 whitespace-pre-wrap bg-neutral-950 p-3 rounded-lg border border-neutral-800">
                                 {draft.message}
                               </p>
                             </div>
@@ -1078,14 +1066,14 @@ export const App: React.FC = () => {
                         {/* Grounded Facts Used */}
                         {draft.factsUsed && draft.factsUsed.length > 0 && (
                           <div className="space-y-1 text-[11px]">
-                            <div className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                            <div className="text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">
                               Verified Facts Grounded in Draft:
                             </div>
                             <div className="flex flex-wrap gap-1.5">
                               {draft.factsUsed.map((f, idx) => (
                                 <span
                                   key={idx}
-                                  className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300"
+                                  className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700 text-neutral-300"
                                 >
                                   {f.fact}
                                 </span>
@@ -1096,10 +1084,10 @@ export const App: React.FC = () => {
 
                         {/* Reviewer Action Bar */}
                         {draft.status === 'draft' && !isEditing && (
-                          <div className="pt-2 border-t border-slate-850 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                          <div className="pt-2 border-t border-neutral-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                             <button
                               onClick={() => startEdit(draft)}
-                              className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 self-start sm:self-center"
+                              className="text-xs text-neutral-300 hover:text-white flex items-center gap-1 self-start sm:self-center"
                             >
                               <Edit2 className="w-3 h-3" /> Edit Draft
                             </button>
@@ -1110,17 +1098,17 @@ export const App: React.FC = () => {
                                 value={reviewerNotes}
                                 onChange={(e) => setReviewerNotes(e.target.value)}
                                 placeholder="Reviewer notes (optional)..."
-                                className="px-2 py-1 text-xs rounded bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-slate-700 w-44"
+                                className="px-2 py-1 text-xs rounded bg-neutral-900 border border-neutral-800 text-neutral-300 focus:outline-none focus:border-neutral-700 w-44"
                               />
                               <button
                                 onClick={() => handleRejectDraft(draft.id)}
-                                className="py-1 px-3 rounded-lg text-xs font-medium bg-rose-600/20 text-rose-300 border border-rose-500/30 hover:bg-rose-600/30 transition flex items-center gap-1"
+                                className="py-1 px-3 rounded-lg text-xs font-medium bg-neutral-900 text-neutral-400 border border-neutral-800 hover:bg-neutral-800 transition flex items-center gap-1"
                               >
                                 <X className="w-3 h-3" /> Reject
                               </button>
                               <button
                                 onClick={() => handleApproveDraft(draft.id)}
-                                className="py-1 px-3 rounded-lg text-xs font-medium bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1"
+                                className="py-1 px-3 rounded-lg text-xs font-semibold bg-white hover:bg-neutral-200 text-black transition flex items-center gap-1 shadow"
                               >
                                 <Check className="w-3 h-3" /> Approve Draft
                               </button>
@@ -1132,9 +1120,9 @@ export const App: React.FC = () => {
                   })}
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center space-y-2">
-                  <Clock className="w-7 h-7 text-slate-600 mx-auto" />
-                  <p className="text-xs text-slate-400">
+                <div className="rounded-xl border border-dashed border-neutral-800 p-8 text-center space-y-2">
+                  <Clock className="w-7 h-7 text-neutral-600 mx-auto" />
+                  <p className="text-xs text-neutral-400">
                     No active follow-up drafts generated yet. Ingest dialogue and click &quot;Draft Follow-Up&quot; to
                     synthesize a governed draft.
                   </p>
@@ -1147,22 +1135,22 @@ export const App: React.FC = () => {
             {activeTab === 'shopper' && (
               <div className="space-y-6">
                 {/* Shopper Identity & Linking Card */}
-                <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
+                <div className="p-5 rounded-2xl bg-neutral-950 border border-neutral-800 shadow-xl space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                        <User className="w-4 h-4 text-purple-400" />
+                      <h2 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+                        <User className="w-4 h-4 text-white" />
                         Shopper Identity Resolution &amp; Linking
                       </h2>
-                      <p className="text-xs text-slate-400 mt-0.5">
+                      <p className="text-xs text-neutral-400 mt-0.5">
                         Permitted explicit identifiers (external customer ID / consented contact hash) or anonymous session. Zero fuzzy identity guessing.
                       </p>
                     </div>
                   </div>
 
                   {!shopperProfile ? (
-                    <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                      <p className="text-xs text-slate-300">
+                    <div className="p-4 rounded-xl bg-black border border-neutral-800 space-y-3">
+                      <p className="text-xs text-neutral-300">
                         {ingestedConversation
                           ? 'No shopper profile is currently linked to this conversation session. Resolve an explicit customer ID or provision an isolated anonymous session:'
                           : 'Ingest a conversation first to link a customer profile.'}
@@ -1174,19 +1162,19 @@ export const App: React.FC = () => {
                             value={shopperExternalIdInput}
                             onChange={(e) => setShopperExternalIdInput(e.target.value)}
                             placeholder="e.g. CUST-8831"
-                            className="px-3 py-2 text-xs rounded-xl bg-slate-900 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 flex-1 font-mono"
+                            className="px-3 py-2 text-xs rounded-xl bg-black border border-neutral-800 text-white focus:outline-none focus:border-white flex-1 font-mono"
                           />
                           <button
                             onClick={() => handleResolveAndLinkShopper(false)}
                             disabled={isLinkingShopper}
-                            className="py-2 px-4 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:bg-slate-800"
+                            className="py-2 px-4 rounded-xl text-xs font-semibold bg-white hover:bg-neutral-200 text-black transition disabled:bg-neutral-900 disabled:text-neutral-600 shadow"
                           >
                             {isLinkingShopper ? 'Linking...' : 'Link Customer ID'}
                           </button>
                           <button
                             onClick={() => handleResolveAndLinkShopper(true)}
                             disabled={isLinkingShopper}
-                            className="py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition disabled:opacity-50"
+                            className="py-2 px-3 rounded-xl text-xs font-semibold bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-700 transition disabled:opacity-50"
                           >
                             Link as Anonymous Session
                           </button>
@@ -1196,7 +1184,7 @@ export const App: React.FC = () => {
                   ) : (
                     <div className="space-y-4">
                       {/* Profile Overview Banner */}
-                      <div className="p-4 rounded-xl bg-slate-950 border border-slate-800/80 space-y-3">
+                      <div className="p-4 rounded-xl bg-black border border-neutral-800 space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-semibold text-white">
@@ -1207,8 +1195,8 @@ export const App: React.FC = () => {
                             <span
                               className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
                                 shopperProfile.isAnonymous
-                                  ? 'bg-slate-800 text-slate-400'
-                                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                  ? 'bg-neutral-800 text-neutral-400'
+                                  : 'bg-white text-black font-bold'
                               }`}
                             >
                               {shopperProfile.isAnonymous ? 'Isolated Anon Session' : 'Identified Customer'}
@@ -1216,12 +1204,12 @@ export const App: React.FC = () => {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-indigo-600/20 text-indigo-300 border border-indigo-500/30">
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-neutral-900 text-neutral-300 border border-neutral-700">
                               Visit #{shopperProfile.visitCount}
                             </span>
                             {shopperProfile.visitCount > 1 && (
-                              <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-                                <History className="w-3 h-3 text-purple-400" /> Returning Visitor (+8 Rubric Weight)
+                              <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-black flex items-center gap-1 font-mono">
+                                <History className="w-3 h-3 text-black" /> Returning Visitor (+8 Rubric Weight)
                               </span>
                             )}
                           </div>
@@ -1229,37 +1217,37 @@ export const App: React.FC = () => {
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
                           <div>
-                            <span className="text-slate-500 block text-[10px] uppercase">Shopper ID</span>
-                            <span className="text-slate-300 font-mono text-[11px] truncate block" title={shopperProfile.shopper.id}>
+                            <span className="text-neutral-500 block text-[10px] uppercase">Shopper ID</span>
+                            <span className="text-neutral-300 font-mono text-[11px] truncate block" title={shopperProfile.shopper.id}>
                               {shopperProfile.shopper.id}
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-500 block text-[10px] uppercase">First Seen</span>
-                            <span className="text-slate-300 font-mono text-[11px]">
+                            <span className="text-neutral-500 block text-[10px] uppercase">First Seen</span>
+                            <span className="text-neutral-300 font-mono text-[11px]">
                               {new Date(shopperProfile.firstSeenAt).toLocaleDateString()}
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-500 block text-[10px] uppercase">Last Seen</span>
-                            <span className="text-slate-300 font-mono text-[11px]">
+                            <span className="text-neutral-500 block text-[10px] uppercase">Last Seen</span>
+                            <span className="text-neutral-300 font-mono text-[11px]">
                               {new Date(shopperProfile.lastSeenAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-500 block text-[10px] uppercase">Consent Status</span>
+                            <span className="text-neutral-500 block text-[10px] uppercase">Consent Status</span>
                             <span
                               className={`font-semibold flex items-center gap-1 ${
-                                shopperProfile.hasActiveConsent ? 'text-emerald-400' : 'text-rose-400'
+                                shopperProfile.hasActiveConsent ? 'text-white' : 'text-neutral-500'
                               }`}
                             >
                               {shopperProfile.hasActiveConsent ? (
                                 <>
-                                  <ShieldCheck className="w-3 h-3" /> Active Attested
+                                  <ShieldCheck className="w-3 h-3 text-white" /> Active Attested
                                 </>
                               ) : (
                                 <>
-                                  <ShieldAlert className="w-3 h-3" /> Consent Revoked
+                                  <ShieldAlert className="w-3 h-3 text-neutral-500" /> Consent Revoked
                                 </>
                               )}
                             </span>
@@ -1270,120 +1258,120 @@ export const App: React.FC = () => {
                       {/* Cross-Visit Memory Grid */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Extracted Interests */}
-                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <Tag className="w-3.5 h-3.5 text-indigo-400" /> Extracted Interests
+                        <div className="p-4 rounded-xl bg-black border border-neutral-800 space-y-2">
+                          <h3 className="text-xs font-semibold text-neutral-200 uppercase tracking-wider flex items-center gap-1.5">
+                            <Tag className="w-3.5 h-3.5 text-white" /> Extracted Interests
                           </h3>
                           {shopperProfile.interests.length > 0 ? (
                             <div className="flex flex-wrap gap-1.5 pt-1">
                               {shopperProfile.interests.map((interest, i) => (
                                 <span
                                   key={i}
-                                  className="px-2 py-0.5 rounded-md text-xs bg-indigo-500/10 text-indigo-300 border border-indigo-500/20"
+                                  className="px-2 py-0.5 rounded-md text-xs bg-neutral-900 text-neutral-200 border border-neutral-700"
                                 >
                                   {interest}
                                 </span>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-xs text-slate-500 italic">No explicit interests recorded yet.</p>
+                            <p className="text-xs text-neutral-500 italic">No explicit interests recorded yet.</p>
                           )}
                         </div>
 
                         {/* Unresolved Objections */}
-                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Unresolved Objections
+                        <div className="p-4 rounded-xl bg-black border border-neutral-800 space-y-2">
+                          <h3 className="text-xs font-semibold text-neutral-200 uppercase tracking-wider flex items-center gap-1.5">
+                            <AlertTriangle className="w-3.5 h-3.5 text-white" /> Unresolved Objections
                           </h3>
                           {shopperProfile.unresolvedObjections.length > 0 ? (
                             <div className="space-y-1.5 max-h-36 overflow-y-auto">
                               {shopperProfile.unresolvedObjections.map((obj, i) => (
-                                <div key={i} className="p-2 rounded bg-slate-900 border border-slate-800 text-xs">
-                                  <span className="font-semibold text-amber-300 capitalize">{obj.objectionType}: </span>
-                                  <span className="text-slate-300">&ldquo;{obj.customerText}&rdquo;</span>
+                                <div key={i} className="p-2 rounded bg-neutral-950 border border-neutral-800 text-xs">
+                                  <span className="font-semibold text-white capitalize">{obj.objectionType}: </span>
+                                  <span className="text-neutral-300">&ldquo;{obj.customerText}&rdquo;</span>
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-xs text-slate-500 italic">No unresolved objections from prior visits.</p>
+                            <p className="text-xs text-neutral-500 italic">No unresolved objections from prior visits.</p>
                           )}
                         </div>
                       </div>
 
                       {/* Past Questions & Recommendations */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <MessageSquare className="w-3.5 h-3.5 text-emerald-400" /> Questions Across Visits
+                        <div className="p-4 rounded-xl bg-black border border-neutral-800 space-y-2">
+                          <h3 className="text-xs font-semibold text-neutral-200 uppercase tracking-wider flex items-center gap-1.5">
+                            <MessageSquare className="w-3.5 h-3.5 text-white" /> Questions Across Visits
                           </h3>
                           {shopperProfile.pastQuestions.length > 0 ? (
                             <div className="space-y-1.5 max-h-36 overflow-y-auto">
                               {shopperProfile.pastQuestions.map((q, i) => (
-                                <div key={i} className="p-2 rounded bg-slate-900 border border-slate-800 text-xs text-slate-300">
+                                <div key={i} className="p-2 rounded bg-neutral-950 border border-neutral-800 text-xs text-neutral-300">
                                   &bull; {q.question}
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-xs text-slate-500 italic">No recorded past questions.</p>
+                            <p className="text-xs text-neutral-500 italic">No recorded past questions.</p>
                           )}
                         </div>
 
-                        <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" /> Prior Vehicle Recommendations
+                        <div className="p-4 rounded-xl bg-black border border-neutral-800 space-y-2">
+                          <h3 className="text-xs font-semibold text-neutral-200 uppercase tracking-wider flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white" /> Prior Vehicle Recommendations
                           </h3>
                           {shopperProfile.priorRecommendations.length > 0 ? (
                             <div className="space-y-1.5 max-h-36 overflow-y-auto">
                               {shopperProfile.priorRecommendations.map((r, i) => (
-                                <div key={i} className="p-2 rounded bg-slate-900 border border-slate-800 text-xs text-slate-300">
+                                <div key={i} className="p-2 rounded bg-neutral-950 border border-neutral-800 text-xs text-neutral-300">
                                   &bull; {r.recommendation}
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <p className="text-xs text-slate-500 italic">No prior recommendations on file.</p>
+                            <p className="text-xs text-neutral-500 italic">No prior recommendations on file.</p>
                           )}
                         </div>
                       </div>
 
                       {/* Interaction Outcome Recording */}
-                      <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                        <h3 className="text-xs font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-                          <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" /> Record Physical-Retail Interaction Outcome
+                      <div className="p-4 rounded-xl bg-black border border-neutral-800 space-y-3">
+                        <h3 className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-1.5">
+                          <ShoppingBag className="w-3.5 h-3.5 text-white" /> Record Physical-Retail Interaction Outcome
                         </h3>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-neutral-400">
                           Record real dealership outcomes to feed the store event stream (emits PURCHASE_RECORDED or MISSED_CONVERSION_RECORDED).
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                           <div>
-                            <label className="text-[10px] text-slate-400 uppercase block mb-1">Outcome Type</label>
+                            <label className="text-[10px] text-neutral-400 uppercase block mb-1">Outcome Type</label>
                             <select
                               value={outcomeType}
                               onChange={(e) => setOutcomeType(e.target.value as 'purchase' | 'missed_conversion')}
-                              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                              className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-white"
                             >
                               <option value="purchase">Purchase</option>
                               <option value="missed_conversion">Missed Conversion</option>
                             </select>
                           </div>
                           <div>
-                            <label className="text-[10px] text-slate-400 uppercase block mb-1">Reason / Notes</label>
+                            <label className="text-[10px] text-neutral-400 uppercase block mb-1">Reason / Notes</label>
                             <input
                               type="text"
                               value={outcomeReason}
                               onChange={(e) => setOutcomeReason(e.target.value)}
                               placeholder={outcomeType === 'purchase' ? 'Purchased Prithvi 110 Deluxe' : 'Price above budget'}
-                              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500"
+                              className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-white"
                             />
                           </div>
                           <div>
-                            <label className="text-[10px] text-slate-400 uppercase block mb-1">Value (₹ INR)</label>
+                            <label className="text-[10px] text-neutral-400 uppercase block mb-1">Value (₹ INR)</label>
                             <input
                               type="number"
                               value={outcomeValue}
                               onChange={(e) => setOutcomeValue(Number(e.target.value))}
-                              className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+                              className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-white font-mono"
                             />
                           </div>
                         </div>
@@ -1392,7 +1380,7 @@ export const App: React.FC = () => {
                           <button
                             onClick={handleRecordOutcome}
                             disabled={isRecordingOutcome}
-                            className="py-1.5 px-4 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 disabled:opacity-50"
+                            className="py-1.5 px-4 rounded-xl text-xs font-semibold bg-white hover:bg-neutral-200 text-black transition flex items-center gap-1.5 disabled:opacity-50 shadow"
                           >
                             <Check className="w-3.5 h-3.5" />
                             {isRecordingOutcome ? 'Recording...' : 'Record Outcome & Emit Event'}
@@ -1400,28 +1388,28 @@ export const App: React.FC = () => {
                         </div>
 
                         {shopperProfile.outcomes.length > 0 && (
-                          <div className="pt-2 border-t border-slate-800/80 space-y-2">
-                            <span className="text-[11px] font-semibold text-slate-400 uppercase">Recorded Outcomes History</span>
+                          <div className="pt-2 border-t border-neutral-800 space-y-2">
+                            <span className="text-[11px] font-semibold text-neutral-400 uppercase">Recorded Outcomes History</span>
                             <div className="space-y-1.5 max-h-32 overflow-y-auto">
                               {shopperProfile.outcomes.map((out) => (
                                 <div
                                   key={out.id}
-                                  className="p-2 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between text-xs"
+                                  className="p-2 rounded-lg bg-neutral-950 border border-neutral-800 flex items-center justify-between text-xs"
                                 >
                                   <div className="flex items-center gap-2">
                                     <span
                                       className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
                                         out.type === 'purchase'
-                                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                          ? 'bg-white text-black font-bold'
+                                          : 'bg-neutral-800 text-neutral-300 border border-neutral-700'
                                       }`}
                                     >
                                       {out.type}
                                     </span>
-                                    <span className="text-slate-200">{out.reason || 'No reason provided'}</span>
+                                    <span className="text-white">{out.reason || 'No reason provided'}</span>
                                   </div>
-                                  <div className="flex items-center gap-3 font-mono text-[11px] text-slate-400">
-                                    {out.value && <span className="text-emerald-400">₹{out.value.toLocaleString()}</span>}
+                                  <div className="flex items-center gap-3 font-mono text-[11px] text-neutral-400">
+                                    {out.value && <span className="text-white font-bold">₹{out.value.toLocaleString()}</span>}
                                     <span>by {out.recordedBy}</span>
                                   </div>
                                 </div>
@@ -1432,25 +1420,25 @@ export const App: React.FC = () => {
                       </div>
 
                       {/* Privacy & Governance Actions */}
-                      <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                      <div className="p-4 rounded-xl bg-black border border-neutral-800 flex flex-wrap items-center justify-between gap-3 text-xs">
                         <div className="space-y-0.5">
-                          <span className="font-semibold text-slate-200 flex items-center gap-1.5">
-                            <Lock className="w-3.5 h-3.5 text-indigo-400" /> Customer Privacy Controls
+                          <span className="font-semibold text-white flex items-center gap-1.5">
+                            <Lock className="w-3.5 h-3.5 text-white" /> Customer Privacy Controls
                           </span>
-                          <p className="text-slate-400 text-[11px]">
+                          <p className="text-neutral-400 text-[11px]">
                             Enforce right to erasure or immediate consent revocation in compliance with DPDP/GDPR.
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={handleRevokeConsent}
-                            className="py-1.5 px-3 rounded-lg text-xs font-medium bg-amber-600/20 text-amber-300 border border-amber-500/30 hover:bg-amber-600/30 transition flex items-center gap-1"
+                            className="py-1.5 px-3 rounded-xl text-xs font-medium bg-neutral-900 text-neutral-300 border border-neutral-700 hover:bg-neutral-800 transition flex items-center gap-1"
                           >
                             <UserX className="w-3.5 h-3.5" /> Revoke Consent
                           </button>
                           <button
                             onClick={handleDeleteShopper}
-                            className="py-1.5 px-3 rounded-lg text-xs font-medium bg-rose-600/20 text-rose-300 border border-rose-500/30 hover:bg-rose-600/30 transition flex items-center gap-1"
+                            className="py-1.5 px-3 rounded-xl text-xs font-medium bg-neutral-900 text-neutral-400 border border-neutral-800 hover:bg-neutral-800 transition flex items-center gap-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" /> Erase Profile
                           </button>
@@ -1463,14 +1451,14 @@ export const App: React.FC = () => {
             )}
 
             {/* Addressable Dialogue Segments Card */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
+            <div className="p-5 rounded-2xl bg-neutral-950 border border-neutral-800 shadow-xl space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-emerald-400" />
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-white flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-white" />
                   Addressable Dialogue Segments
                 </h2>
                 {ingestedConversation && (
-                  <span className="text-xs text-slate-400 font-mono">
+                  <span className="text-xs text-neutral-400 font-mono">
                     ID: {ingestedConversation.conversation.id}
                   </span>
                 )}
@@ -1481,30 +1469,30 @@ export const App: React.FC = () => {
                   {ingestedConversation.transcript.segments.map((seg) => (
                     <div
                       key={seg.id}
-                      className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1 hover:border-slate-700 transition"
+                      className="p-3 rounded-xl bg-black border border-neutral-800 space-y-1 hover:border-neutral-700 transition"
                     >
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-mono text-indigo-400 font-medium">{seg.id}</span>
+                        <span className="font-mono text-white font-medium">{seg.id}</span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
                             seg.speaker === 'advisor'
-                              ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                              ? 'bg-neutral-800 text-white border border-neutral-700'
                               : seg.speaker === 'customer'
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                : 'bg-slate-800 text-slate-400'
+                                ? 'bg-white text-black font-bold'
+                                : 'bg-neutral-900 text-neutral-400'
                           }`}
                         >
                           {seg.speaker}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-200">{seg.text}</p>
+                      <p className="text-xs text-neutral-200">{seg.text}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-slate-800 p-8 text-center space-y-2">
-                  <Upload className="w-6 h-6 text-slate-600 mx-auto" />
-                  <p className="text-xs text-slate-400">
+                <div className="rounded-xl border border-dashed border-neutral-800 p-8 text-center space-y-2">
+                  <Upload className="w-6 h-6 text-neutral-600 mx-auto" />
+                  <p className="text-xs text-neutral-400">
                     No active conversation segments ingested yet.
                   </p>
                 </div>
@@ -1513,21 +1501,21 @@ export const App: React.FC = () => {
 
             {/* Operating Guarantees Card */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-1">
-                <span className="font-semibold text-slate-200 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-1">
+                <span className="font-semibold text-white flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                   Human Approval Gate
                 </span>
-                <p className="text-slate-400">
+                <p className="text-neutral-400">
                   Outreach messages require human review and authorization. Zero automatic dispatch is supported.
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 space-y-1">
-                <span className="font-semibold text-slate-200 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+              <div className="p-4 rounded-xl bg-neutral-950 border border-neutral-800 space-y-1">
+                <span className="font-semibold text-white flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-white" />
                   Strict Spec Grounding
                 </span>
-                <p className="text-slate-400">
+                <p className="text-neutral-400">
                   Every figure or claim in drafts maps to cited knowledge chunks and customer consent boundaries.
                 </p>
               </div>
@@ -1538,8 +1526,8 @@ export const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/60 px-6 py-4 text-center text-xs text-slate-500">
-        StoreSignal AI • Portfolio-grade agentic retail intelligence platform • Built strictly phase by phase
+      <footer className="border-t border-neutral-800 px-6 py-4 text-center text-xs text-neutral-500">
+        StoreSignal AI • Agentic Physical-Retail Intelligence &amp; Conversion Platform
       </footer>
     </div>
   );

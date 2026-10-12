@@ -10,6 +10,7 @@ import { OpenRouterClient } from './OpenRouterClient.js';
 export interface OpenRouterProviderConfig {
   apiKey?: string;
   appUrl: string;
+  baseUrl?: string;
   model: string;
   fallbackModel?: string;
   timeoutMs: number;
@@ -35,6 +36,7 @@ export class OpenRouterProvider implements AIProvider {
       this.client = new OpenRouterClient({
         apiKey: this.apiKey,
         appUrl: config.appUrl,
+        baseUrl: config.baseUrl,
         defaultModel: this.model,
         defaultTimeoutMs: config.timeoutMs,
       });
@@ -46,6 +48,7 @@ export class OpenRouterProvider implements AIProvider {
       this.fallbackClient = new OpenRouterClient({
         apiKey: this.apiKey,
         appUrl: config.appUrl,
+        baseUrl: config.baseUrl,
         defaultModel: this.fallbackModel,
         defaultTimeoutMs: config.timeoutMs,
       });
