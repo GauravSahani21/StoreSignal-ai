@@ -55,13 +55,11 @@ export const aiRoutes: FastifyPluginAsync<AiRoutesOptions> = async (fastify, opt
 
   // Dedicated connectivity status endpoint (separate from /health)
   fastify.get('/api/ai/health', async (_request, reply) => {
-    const isNvidia = Boolean(
-      env?.NVIDIA_API_KEY ||
-      env?.OPENROUTER_API_KEY?.startsWith('nvapi-')
-    );
     return reply.status(200).send({
-      provider: isNvidia ? 'nvidia' : 'openrouter',
-      status: 'configured',
+      provider: 'groq',
+      model: env?.GROQ_MODEL ?? 'openai/gpt-oss-120b',
+      baseUrl: env?.GROQ_BASE_URL ?? 'https://api.groq.com/openai/v1',
+      status: env?.GROQ_API_KEY ? 'configured' : 'unconfigured',
       timestamp: new Date().toISOString(),
     });
   });

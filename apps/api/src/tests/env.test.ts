@@ -50,33 +50,42 @@ describe('Environment Configuration Loader', () => {
     }
   });
 
-  it('normalizes first-class NVIDIA_API_KEY to configure NVIDIA endpoint and default model', () => {
+  it('loads Groq API key and resolves default Groq endpoint and model', () => {
     const config = loadEnv({
       NODE_ENV: 'test',
       APP_URL: 'http://localhost:5173',
       DATABASE_URL: 'postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev',
-      NVIDIA_API_KEY: 'nvapi-test-key-123',
+      GROQ_API_KEY: 'gsk_test_key_123',
     });
 
-    expect(config.NVIDIA_API_KEY).toBe('nvapi-test-key-123');
-    expect(config.NVIDIA_BASE_URL).toBe('https://integrate.api.nvidia.com/v1');
-    expect(config.NVIDIA_MODEL).toBe('meta/llama-3.2-11b-vision-instruct');
-    expect(config.OPENROUTER_API_KEY).toBe('nvapi-test-key-123');
-    expect(config.OPENROUTER_BASE_URL).toBe('https://integrate.api.nvidia.com/v1');
-    expect(config.OPENROUTER_MODEL).toBe('meta/llama-3.2-11b-vision-instruct');
+    expect(config.GROQ_API_KEY).toBe('gsk_test_key_123');
+    expect(config.GROQ_BASE_URL).toBe('https://api.groq.com/openai/v1');
+    expect(config.GROQ_MODEL).toBe('openai/gpt-oss-120b');
   });
 
-  it('normalizes nvapi- prefixed OPENROUTER_API_KEY to NVIDIA gateway', () => {
+  it('allows overriding GROQ_BASE_URL and GROQ_MODEL', () => {
     const config = loadEnv({
       NODE_ENV: 'test',
       APP_URL: 'http://localhost:5173',
       DATABASE_URL: 'postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev',
-      OPENROUTER_API_KEY: 'nvapi-legacy-key-456',
+      GROQ_API_KEY: 'gsk_custom_key',
+      GROQ_BASE_URL: 'https://api.groq.com/openai/v1',
+      GROQ_MODEL: 'qwen/qwen3.8-27b',
     });
 
-    expect(config.NVIDIA_API_KEY).toBe('nvapi-legacy-key-456');
-    expect(config.OPENROUTER_BASE_URL).toBe('https://integrate.api.nvidia.com/v1');
-    expect(config.OPENROUTER_MODEL).toBe('meta/llama-3.2-11b-vision-instruct');
+    expect(config.GROQ_MODEL).toBe('qwen/qwen3.8-27b');
+    expect(config.GROQ_BASE_URL).toBe('https://api.groq.com/openai/v1');
+  });
+
+  it('works without GROQ_API_KEY (unconfigured state)', () => {
+    const config = loadEnv({
+      NODE_ENV: 'test',
+      APP_URL: 'http://localhost:5173',
+      DATABASE_URL: 'postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev',
+    });
+
+    expect(config.GROQ_API_KEY).toBeUndefined();
+    expect(config.GROQ_BASE_URL).toBe('https://api.groq.com/openai/v1');
+    expect(config.GROQ_MODEL).toBe('openai/gpt-oss-120b');
   });
 });
-

@@ -115,6 +115,15 @@ export function ExperimentationDashboard() {
       const res = await fetch('http://localhost:3001/api/experiments', {
         headers: { 'x-org-id': 'org-vayu-motors-dev' },
       });
+      if (!res.ok) {
+        console.error(`Experiments request failed: ${res.status}`);
+        return;
+      }
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('Non-JSON response from experiments API');
+        return;
+      }
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setExperiments(data.data);
@@ -135,6 +144,15 @@ export function ExperimentationDashboard() {
       const res = await fetch(`http://localhost:3001/api/experiments/${expId}/analysis`, {
         headers: { 'x-org-id': 'org-vayu-motors-dev' },
       });
+      if (!res.ok) {
+        console.error(`Analysis request failed: ${res.status}`);
+        return;
+      }
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error('Non-JSON response from analysis API');
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setAnalysis(data.data);
@@ -213,10 +231,10 @@ export function ExperimentationDashboard() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-neutral-200/80 rounded-2xl p-6 shadow-sm text-neutral-900">
         <div>
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-neutral-100 text-black border border-neutral-200">
+            <div className="p-2.5 rounded-xl bg-neutral-100 text-neutral-900 border border-neutral-200">
               <FlaskConical className="w-5 h-5" />
             </div>
             <div>
@@ -233,14 +251,14 @@ export function ExperimentationDashboard() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => fetchExperiments()}
-            className="flex items-center gap-2 px-3.5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl text-sm font-medium transition-colors border border-neutral-200"
+            className="flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-neutral-50 text-neutral-800 rounded-xl text-sm font-medium transition-colors border border-neutral-200 shadow-sm"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
           <button
             onClick={() => setShowCsvModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-neutral-800 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-neutral-800 text-white font-medium rounded-xl text-sm transition-colors shadow-sm"
           >
             <Upload className="w-4 h-4" />
             Import Outcomes CSV
@@ -265,37 +283,37 @@ export function ExperimentationDashboard() {
                   onClick={() => setSelectedExpId(exp.id)}
                   className={`p-4 rounded-xl cursor-pointer transition-all border ${
                     isSelected
-                      ? 'bg-black border-black text-white shadow-md'
-                      : 'bg-white border-neutral-200 hover:border-neutral-400 text-neutral-900 shadow-sm'
+                      ? 'bg-white border-neutral-900 ring-2 ring-neutral-900/10 text-neutral-900 shadow-md'
+                      : 'bg-white border-neutral-200 hover:border-neutral-300 text-neutral-900 shadow-sm'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <span
                       className={`text-xs px-2 py-0.5 rounded font-medium ${
                         isSelected
-                          ? 'bg-neutral-800 text-white'
+                          ? 'bg-neutral-900 text-white font-bold'
                           : exp.status === 'running'
-                          ? 'bg-neutral-100 text-neutral-900 border border-neutral-200 font-semibold'
+                          ? 'bg-neutral-100 text-neutral-800 border border-neutral-200 font-semibold'
                           : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
                       }`}
                     >
                       {exp.status.toUpperCase()}
                     </span>
-                    <span className={`text-[11px] uppercase tracking-wider font-mono ${isSelected ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                    <span className="text-[11px] uppercase tracking-wider font-mono text-neutral-400">
                       {exp.targetType.replace('_', ' ')}
                     </span>
                   </div>
 
-                  <h3 className={`font-semibold text-sm line-clamp-1 mb-1 ${isSelected ? 'text-white' : 'text-neutral-900'}`}>
+                  <h3 className="font-semibold text-sm line-clamp-1 mb-1 text-neutral-900">
                     {exp.name}
                   </h3>
-                  <p className={`text-xs line-clamp-2 mb-3 ${isSelected ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                  <p className="text-xs line-clamp-2 mb-3 text-neutral-500">
                     {exp.hypothesis}
                   </p>
 
-                  <div className={`flex items-center justify-between text-xs border-t pt-2 font-mono ${isSelected ? 'border-neutral-800 text-neutral-300' : 'border-neutral-100 text-neutral-500'}`}>
+                  <div className="flex items-center justify-between text-xs border-t border-neutral-100 pt-2 font-mono text-neutral-500">
                     <span>N = {exp.totalExposures}</span>
-                    <span className={`font-semibold ${isSelected ? 'text-white' : 'text-neutral-900'}`}>
+                    <span className="font-semibold text-neutral-900">
                       {(exp.overallConversionRate * 100).toFixed(1)}% CR
                     </span>
                   </div>
@@ -310,7 +328,7 @@ export function ExperimentationDashboard() {
           {analysis ? (
             <>
               {/* Hypothesis & Overview Card */}
-              <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm space-y-5 text-neutral-900">
+              <div className="bg-white border border-neutral-200/80 rounded-2xl p-6 shadow-sm space-y-5 text-neutral-900">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-neutral-100 pb-4">
                   <div>
                     <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
@@ -324,13 +342,13 @@ export function ExperimentationDashboard() {
 
                   <div className="flex items-center gap-2">
                     {analysis.winnerDeclared ? (
-                      <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black text-white text-xs font-bold shadow-sm">
+                      <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black text-white text-xs font-semibold shadow-sm">
                         <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                         Significant Winner: {analysis.winningVariantKey}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-700 text-xs font-medium">
-                        <Clock className="w-3.5 h-3.5 text-neutral-500" />
+                        <Clock className="w-3.5 h-3.5 text-neutral-400" />
                         Testing in Progress (No Declared Winner)
                       </span>
                     )}
@@ -343,7 +361,7 @@ export function ExperimentationDashboard() {
                     <ShieldAlert className="w-4 h-4 text-neutral-700" />
                     Statistical Governance & Safeguard Warnings
                   </div>
-                  <ul className="text-xs space-y-1.5 list-disc pl-5 text-neutral-600 leading-relaxed">
+                  <ul className="text-xs space-y-1.5 list-disc pl-5 text-neutral-400 leading-relaxed">
                     {analysis.limitationsAndWarnings.map((warning, idx) => (
                       <li key={idx}>{warning}</li>
                     ))}
@@ -363,7 +381,7 @@ export function ExperimentationDashboard() {
                         className={`rounded-xl p-5 border transition-all ${
                           v.key === analysis.winningVariantKey
                             ? 'bg-white border-2 border-black shadow-md'
-                            : 'bg-neutral-50 border border-neutral-200'
+                            : 'bg-neutral-50/70 border border-neutral-200'
                         }`}
                       >
                         <div className="flex items-start justify-between mb-3">
@@ -371,24 +389,24 @@ export function ExperimentationDashboard() {
                             <div className="flex items-center gap-2">
                               <h4 className="font-semibold text-neutral-900 text-base">{v.name}</h4>
                               {v.isControl ? (
-                                <span className="text-[10px] px-2 py-0.5 rounded bg-neutral-200 text-neutral-800 font-mono font-semibold">
+                                <span className="text-[10px] px-2 py-0.5 rounded bg-neutral-100 text-neutral-700 border border-neutral-200 font-mono font-semibold">
                                   CONTROL
                                 </span>
                               ) : (
-                                <span className="text-[10px] px-2 py-0.5 rounded bg-black text-white font-bold font-mono">
+                                <span className="text-[10px] px-2 py-0.5 rounded bg-neutral-900 text-white font-semibold font-mono">
                                   CHALLENGER
                                 </span>
                               )}
                             </div>
-                            <span className="text-xs text-neutral-500 font-mono">Key: {v.key}</span>
+                            <span className="text-xs text-neutral-400 font-mono">Key: {v.key}</span>
                           </div>
 
                           <div className="text-right">
                             <span
-                              className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                              className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap border ${
                                 v.sampleSizeMet
-                                  ? 'bg-neutral-200 text-neutral-900 font-semibold'
-                                  : 'bg-neutral-200/60 text-neutral-600'
+                                  ? 'bg-neutral-100 text-neutral-900 border-neutral-300 font-semibold'
+                                  : 'bg-neutral-50 text-neutral-600 border-neutral-200'
                               }`}
                             >
                               N = {v.exposures} / {analysis.minSampleSize}
@@ -440,9 +458,9 @@ export function ExperimentationDashboard() {
 
                 {/* Two-Proportion Statistical Hypothesis Comparison */}
                 {analysis.statisticalComparison && (
-                  <div className="border border-neutral-200 rounded-xl p-5 bg-neutral-50 space-y-3">
+                  <div className="border border-neutral-200 rounded-xl p-5 bg-white space-y-3">
                     <h4 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
-                      <BarChart2 className="w-4 h-4 text-neutral-800" />
+                      <BarChart2 className="w-4 h-4 text-neutral-700" />
                       Two-Proportion Z-Test Comparison (Against {analysis.statisticalComparison.controlVariantKey})
                     </h4>
 
@@ -458,9 +476,9 @@ export function ExperimentationDashboard() {
                             <th className="py-2 px-3">Statistical Verdict</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-neutral-200 font-mono">
+                        <tbody className="divide-y divide-neutral-100 font-mono">
                           {analysis.statisticalComparison.comparisons.map((c, i) => (
-                            <tr key={i} className="hover:bg-neutral-100/60">
+                            <tr key={i} className="hover:bg-neutral-50">
                               <td className="py-3 px-3 font-semibold text-neutral-900">{c.variantKey}</td>
                               <td className="py-3 px-3 text-neutral-700">
                                 {c.conversionRateDiff > 0 ? `+${(c.conversionRateDiff * 100).toFixed(1)}%` : `${(c.conversionRateDiff * 100).toFixed(1)}%`}
@@ -470,18 +488,18 @@ export function ExperimentationDashboard() {
                               </td>
                               <td className="py-3 px-3 text-neutral-700">{c.zScore}</td>
                               <td className="py-3 px-3">
-                                <span className={c.pValue < 0.05 ? 'text-black font-bold' : 'text-neutral-500'}>
+                                <span className={c.pValue < 0.05 ? 'text-neutral-900 font-bold' : 'text-neutral-500'}>
                                   {c.pValue}
                                 </span>
                               </td>
                               <td className="py-3 px-3">
                                 <span
-                                  className={`px-2 py-0.5 rounded text-[10px] font-sans font-bold uppercase tracking-wider ${
+                                  className={`px-2 py-0.5 rounded text-[10px] font-sans font-semibold uppercase tracking-wider border ${
                                     c.verdict === 'significant_winner'
-                                      ? 'bg-black text-white font-bold'
+                                      ? 'bg-neutral-900 text-white border-neutral-900'
                                       : c.verdict === 'insufficient_sample'
-                                      ? 'bg-neutral-200 text-neutral-800 font-medium'
-                                      : 'bg-neutral-100 text-neutral-600'
+                                      ? 'bg-neutral-100 text-neutral-700 border-neutral-200'
+                                      : 'bg-neutral-50 text-neutral-600 border-neutral-200'
                                   }`}
                                 >
                                   {c.verdict.replace('_', ' ')}
@@ -497,16 +515,16 @@ export function ExperimentationDashboard() {
               </div>
 
               {/* Interactive Deterministic Assignment Simulator */}
-              <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm space-y-4 text-neutral-900">
+              <div className="bg-white border border-neutral-200/80 rounded-2xl p-6 shadow-sm space-y-4 text-neutral-900">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-neutral-100 text-black border border-neutral-200">
+                  <div className="p-2 rounded-xl bg-neutral-100 text-neutral-900 border border-neutral-200">
                     <Hash className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="font-bold text-neutral-900 text-base">
                       Deterministic Assignment Simulator
                     </h3>
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-xs text-neutral-400">
                       Simulate cryptographic SHA-256 assignment for any customer ref under current eligibility rules.
                     </p>
                   </div>
@@ -521,7 +539,7 @@ export function ExperimentationDashboard() {
                       type="text"
                       value={simEntityId}
                       onChange={(e) => setSimEntityId(e.target.value)}
-                      className="w-full bg-neutral-50 border border-neutral-300 rounded-xl px-3 py-2 text-sm text-neutral-900 font-mono focus:outline-none focus:border-black"
+                      className="w-full bg-white border border-neutral-200 rounded-xl px-3 py-2 text-sm text-neutral-900 font-mono focus:outline-none focus:border-black shadow-sm"
                     />
                   </div>
 
@@ -546,7 +564,7 @@ export function ExperimentationDashboard() {
                     <select
                       value={simChannel}
                       onChange={(e) => setSimChannel(e.target.value)}
-                      className="w-full bg-neutral-50 border border-neutral-300 rounded-xl px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:border-black"
+                      className="w-full bg-white border border-neutral-200 rounded-xl px-3 py-2 text-sm text-neutral-900 focus:outline-none focus:border-black shadow-sm"
                     >
                       <option value="whatsapp">WhatsApp</option>
                       <option value="email">Email</option>
@@ -560,7 +578,7 @@ export function ExperimentationDashboard() {
                   <button
                     onClick={handleTestAssignment}
                     disabled={simLoading}
-                    className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-neutral-800 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-neutral-800 text-white font-medium rounded-xl text-sm transition-colors shadow-sm"
                   >
                     <Sparkles className="w-4 h-4" />
                     {simLoading ? 'Evaluating...' : 'Test Deterministic Allocation'}
@@ -570,8 +588,8 @@ export function ExperimentationDashboard() {
                     <div
                       className={`text-xs px-4 py-2 rounded-xl border font-mono ${
                         simResult.isEnrolled
-                          ? 'bg-neutral-100 border-neutral-300 text-neutral-900 font-semibold'
-                          : 'bg-neutral-100 border-neutral-200 text-neutral-600'
+                          ? 'bg-neutral-900 border-neutral-900 text-white font-semibold'
+                          : 'bg-neutral-100 border-neutral-200 text-neutral-700'
                       }`}
                     >
                       {simResult.isEnrolled
@@ -583,7 +601,7 @@ export function ExperimentationDashboard() {
               </div>
             </>
           ) : (
-            <div className="p-12 text-center text-neutral-500 bg-white border border-neutral-200 rounded-2xl shadow-sm">
+            <div className="p-12 text-center text-neutral-400 bg-white border border-neutral-200 rounded-2xl shadow-sm">
               Select an experiment to view variant analytics.
             </div>
           )}
@@ -592,22 +610,22 @@ export function ExperimentationDashboard() {
 
       {/* CSV Import Modal */}
       {showCsvModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white border border-neutral-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-neutral-900">
             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
-                <Upload className="w-5 h-5 text-black" />
+                <Upload className="w-5 h-5 text-neutral-900" />
                 Import Experiment Outcomes (CSV)
               </h3>
               <button
                 onClick={() => setShowCsvModal(false)}
-                className="text-neutral-400 hover:text-black transition"
+                className="text-neutral-400 hover:text-neutral-900 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-neutral-600">
+            <p className="text-xs text-neutral-400">
               Paste CSV rows with headers: <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-900">variant_key,entity_id,event_type,value</code>. Supported event types: exposure, send, response, conversion.
             </p>
 
@@ -615,11 +633,11 @@ export function ExperimentationDashboard() {
               rows={6}
               value={csvContent}
               onChange={(e) => setCsvContent(e.target.value)}
-              className="w-full bg-neutral-50 border border-neutral-300 rounded-xl p-3 text-xs font-mono text-neutral-900 focus:outline-none focus:border-black"
+              className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-xs font-mono text-neutral-900 focus:outline-none focus:border-black"
             />
 
             {importStatus && (
-              <div className="text-xs p-2 rounded bg-neutral-100 border border-neutral-200 text-neutral-800 font-mono">
+              <div className="text-xs p-2.5 rounded-xl bg-neutral-100 border border-neutral-200 text-neutral-800 font-mono">
                 {importStatus}
               </div>
             )}
@@ -627,13 +645,13 @@ export function ExperimentationDashboard() {
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setShowCsvModal(false)}
-                className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200 rounded-xl text-sm"
+                className="px-4 py-2 bg-white hover:bg-neutral-50 text-neutral-700 border border-neutral-200 rounded-xl text-sm font-medium transition shadow-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleImportCsv}
-                className="px-4 py-2 bg-black hover:bg-neutral-800 text-white font-semibold rounded-xl text-sm shadow-sm"
+                className="px-4 py-2 bg-neutral-900 hover:bg-black text-white font-medium rounded-xl text-sm shadow-sm transition active:scale-[0.98]"
               >
                 Import Events
               </button>

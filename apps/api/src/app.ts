@@ -63,8 +63,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
               '*.token',
               '*.password',
               '*.secret',
-              'NVIDIA_API_KEY',
-              'OPENROUTER_API_KEY',
+              'GROQ_API_KEY',
               'STT_API_KEY',
             ],
             censor: '[REDACTED]',
@@ -147,16 +146,15 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
     }
   });
 
-  // Initialize AI Provider
+  // Initialize AI Provider (Groq only)
   const aiProvider =
     options.aiProvider ??
     new OpenRouterProvider({
-      apiKey: env.NVIDIA_API_KEY || env.OPENROUTER_API_KEY,
-      baseUrl: env.NVIDIA_API_KEY ? env.NVIDIA_BASE_URL : env.OPENROUTER_BASE_URL,
+      apiKey: env.GROQ_API_KEY,
+      baseUrl: env.GROQ_BASE_URL,
       appUrl: env.APP_URL,
-      model: env.NVIDIA_API_KEY ? env.NVIDIA_MODEL : env.OPENROUTER_MODEL,
-      fallbackModel: env.OPENROUTER_FALLBACK_MODEL,
-      timeoutMs: env.OPENROUTER_TIMEOUT_MS,
+      model: env.GROQ_MODEL,
+      timeoutMs: env.GROQ_TIMEOUT_MS,
     });
 
   // Initialize STT Provider

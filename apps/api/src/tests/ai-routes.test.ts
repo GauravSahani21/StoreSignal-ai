@@ -203,11 +203,11 @@ describe('POST /api/ai/chat and GET /api/ai/health Endpoints', () => {
     await app502.close();
   });
 
-  it('GET /api/ai/health returns 200 without exposing keys while /health remains AI-free', async () => {
+  it('GET /api/ai/health returns 200 with provider=groq and does not expose keys', async () => {
     const mockAiProvider: AIProvider = {
       generate: async () => ({
         content: 'ok',
-        model: 'test',
+        model: 'openai/gpt-oss-120b',
         finishReason: 'stop',
         usage: null,
         latencyMs: 1,
@@ -227,7 +227,9 @@ describe('POST /api/ai/chat and GET /api/ai/health Endpoints', () => {
       url: '/api/ai/health',
     });
     expect(aiHealthRes.statusCode).toBe(200);
-    expect(JSON.parse(aiHealthRes.payload).provider).toBe('openrouter');
+    const body = JSON.parse(aiHealthRes.payload);
+    expect(body.provider).toBe('groq');
+    expect(JSON.stringify(body)).not.toContain('gsk_');
 
     const baseHealthRes = await app.inject({
       method: 'GET',
@@ -235,23 +237,16 @@ describe('POST /api/ai/chat and GET /api/ai/health Endpoints', () => {
     });
     expect(baseHealthRes.statusCode).toBe(200);
     // Base health endpoint has no AI references or dependencies
-    expect(baseHealthRes.payload).not.toContain('openrouter');
+    expect(baseHealthRes.payload).not.toContain('groq');
 
     await app.close();
   });
 
-  it('GET /api/ai/health reports provider as nvidia when NVIDIA_API_KEY is configured', async () => {
-    const nvidiaEnv = loadEnv({
-      NODE_ENV: 'test',
-      APP_URL: 'http://localhost:5173',
-      DATABASE_URL: 'postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev',
-      NVIDIA_API_KEY: 'nvapi-mock-key',
-    });
-
+  it('GET /api/ai/health reports unconfigured status when GROQ_API_KEY is absent', async () => {
     const mockAiProvider: AIProvider = {
       generate: async () => ({
         content: 'ok',
-        model: 'meta/llama-3.2-11b-vision-instruct',
+        model: 'openai/gpt-oss-120b',
         finishReason: 'stop',
         usage: null,
         latencyMs: 1,
@@ -264,14 +259,54 @@ describe('POST /api/ai/chat and GET /api/ai/health Endpoints', () => {
       },
     };
 
-    const app = await buildApp({ env: nvidiaEnv, logger: false, aiProvider: mockAiProvider });
+    const app = await buildApp({ env: dummyEnv, logger: false, aiProvider: mockAiProvider });
 
     const aiHealthRes = await app.inject({
       method: 'GET',
       url: '/api/ai/health',
     });
     expect(aiHealthRes.statusCode).toBe(200);
-    expect(JSON.parse(aiHealthRes.payload).provider).toBe('nvidia');
+    const body = JSON.parse(aiHealthRes.payload);
+    expect(body.provider).toBe('groq');
+    // No key in dummyEnv so status is unconfigured
+    expect(body.status).toBe('unconfigured');
+
+    await app.close();
+  });
+
+
+  it('GET /api/ai/health reports provider as groq when GROQ_API_KEY is configured', async () => {
+    const groqEnv = loadEnv({
+      NODE_ENV: 'test',
+      APP_URL: 'http://localhost:5173',
+      DATABASE_URL: 'postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev',
+      GROQ_API_KEY: 'gsk_mock_key_abc',
+    });
+
+    const mockAiProvider: AIProvider = {
+      generate: async () => ({
+        content: 'ok',
+        model: 'openai/gpt-oss-120b',
+        finishReason: 'stop',
+        usage: null,
+        latencyMs: 1,
+      }),
+      stream: () => {
+        throw new Error();
+      },
+      generateWithTools: async () => {
+        throw new Error();
+      },
+    };
+
+    const app = await buildApp({ env: groqEnv, logger: false, aiProvider: mockAiProvider });
+
+    const aiHealthRes = await app.inject({
+      method: 'GET',
+      url: '/api/ai/health',
+    });
+    expect(aiHealthRes.statusCode).toBe(200);
+    expect(JSON.parse(aiHealthRes.payload).provider).toBe('groq');
 
     await app.close();
   });

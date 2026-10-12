@@ -276,10 +276,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Filter and Controls Bar */}
-      <div className="p-4 rounded-2xl bg-white border border-neutral-200 shadow-sm flex flex-wrap items-center justify-between gap-4 text-neutral-900">
+      <div className="p-4 rounded-2xl bg-white border border-neutral-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4 text-neutral-900">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-neutral-700" />
+            <Filter className="w-4 h-4 text-neutral-500" />
             <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Filters:</span>
           </div>
 
@@ -287,7 +287,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
           <select
             value={storeFilter}
             onChange={(e) => setStoreFilter(e.target.value)}
-            className="rounded-xl bg-neutral-50 border border-neutral-300 px-3 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-black transition"
+            className="rounded-xl bg-white border border-neutral-200 px-3 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-neutral-900 transition"
           >
             <option value="">All Stores (Indiranagar &amp; Koramangala)</option>
             <option value="store-indiranagar-01">Vayu Motors - Indiranagar (store-indiranagar-01)</option>
@@ -298,7 +298,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
           <select
             value={demoFilter}
             onChange={(e) => setDemoFilter(e.target.value as 'all' | 'real_only' | 'demo_only')}
-            className="rounded-xl bg-neutral-50 border border-neutral-300 px-3 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-black transition"
+            className="rounded-xl bg-white border border-neutral-200 px-3 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-neutral-900 transition"
           >
             <option value="all">Include Demo &amp; Real Data</option>
             <option value="real_only">Real Store Operations Only</option>
@@ -307,8 +307,8 @@ export const RetailAnalyticsDashboard: React.FC = () => {
 
           {/* DEMO Indicator Pill */}
           {demoFilter !== 'real_only' && demoCount > 0 && (
-            <span className="px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-neutral-100 text-neutral-800 border border-neutral-200 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-neutral-900 animate-pulse" />
+            <span className="px-2.5 py-1 rounded-full text-[11px] font-mono font-medium bg-neutral-100 text-neutral-700 border border-neutral-200 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               Demo Data Active ({demoCount} records)
             </span>
           )}
@@ -325,7 +325,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
 
           <button
             onClick={handleExportCsv}
-            className="py-1.5 px-3.5 rounded-xl text-xs font-semibold bg-black hover:bg-neutral-800 text-white transition flex items-center gap-1.5 shadow-sm"
+            className="py-1.5 px-3.5 rounded-xl text-xs font-semibold bg-white hover:bg-neutral-200 text-black transition flex items-center gap-1.5 shadow-sm"
           >
             <Download className="w-3.5 h-3.5" />
             Export Events CSV
@@ -336,7 +336,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
       {/* Low-data Disclaimer Banner */}
       {overview?.isLowDataState && (
         <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-700 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-neutral-800 shrink-0 mt-0.5" />
+          <AlertTriangle className="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
           <div>
             <span className="font-semibold text-neutral-900">Notice: Low sample size (N = {overview.sampleSize} &lt; 5).</span>{' '}
             Metrics are indicative; statistical confidence requires larger sample volume.
@@ -347,10 +347,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
       {/* Executive & Floor Manager KPI Summary Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
         {/* KPI 1: Conversations */}
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-sm space-y-1 text-neutral-900">
+        <div className="p-4 rounded-xl bg-white border border-neutral-200/80 shadow-sm space-y-1 text-neutral-900">
           <div className="flex items-center justify-between text-neutral-500">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Conversations</span>
-            <MessageSquare className="w-3.5 h-3.5 text-neutral-700" />
+            <MessageSquare className="w-3.5 h-3.5 text-neutral-500" />
           </div>
           <div className="text-2xl font-bold font-mono text-neutral-900">
             {overview?.conversationsProcessed ?? 0}
@@ -361,10 +361,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* KPI 2: Unique Shoppers */}
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-sm space-y-1 text-neutral-900">
+        <div className="p-4 rounded-xl bg-white border border-neutral-200/80 shadow-sm space-y-1 text-neutral-900">
           <div className="flex items-center justify-between text-neutral-500">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Shoppers</span>
-            <Users className="w-3.5 h-3.5 text-neutral-700" />
+            <Users className="w-3.5 h-3.5 text-neutral-500" />
           </div>
           <div className="text-2xl font-bold font-mono text-neutral-900">
             {overview?.uniqueAuthorizedShoppers ?? 0}
@@ -373,10 +373,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* KPI 3: Recorded Conversions & Rate */}
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-sm space-y-1 text-neutral-900">
+        <div className="p-4 rounded-xl bg-white border border-neutral-200/80 shadow-sm space-y-1 text-neutral-900">
           <div className="flex items-center justify-between text-neutral-500">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Conversions</span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-neutral-700" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-neutral-500" />
           </div>
           <div className="text-2xl font-bold font-mono text-neutral-900">
             {overview?.recordedConversions ?? 0}
@@ -388,10 +388,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* KPI 4: Total Revenue */}
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-sm space-y-1 text-neutral-900">
+        <div className="p-4 rounded-xl bg-white border border-neutral-200/80 shadow-sm space-y-1 text-neutral-900">
           <div className="flex items-center justify-between text-neutral-500">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Total Revenue</span>
-            <DollarSign className="w-3.5 h-3.5 text-neutral-700" />
+            <DollarSign className="w-3.5 h-3.5 text-neutral-500" />
           </div>
           <div className="text-xl font-bold font-mono text-neutral-900 truncate">
             {formatCurrency(overview?.totalRevenueInr ?? 0)}
@@ -400,10 +400,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* KPI 5: Avg Processing Latency */}
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-sm space-y-1 text-neutral-900">
+        <div className="p-4 rounded-xl bg-white border border-neutral-200/80 shadow-sm space-y-1 text-neutral-900">
           <div className="flex items-center justify-between text-neutral-500">
             <span className="text-[11px] font-semibold uppercase tracking-wider">Latency</span>
-            <Clock className="w-3.5 h-3.5 text-neutral-700" />
+            <Clock className="w-3.5 h-3.5 text-neutral-500" />
           </div>
           <div className="text-2xl font-bold font-mono text-neutral-900">
             {overview?.avgProcessingLatencyMs ?? 0}
@@ -415,10 +415,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* KPI 6: AI Usage & Cost */}
-        <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-sm space-y-1 text-neutral-900">
+        <div className="p-4 rounded-xl bg-white border border-neutral-200/80 shadow-sm space-y-1 text-neutral-900">
           <div className="flex items-center justify-between text-neutral-500">
             <span className="text-[11px] font-semibold uppercase tracking-wider">AI Operations</span>
-            <Zap className="w-3.5 h-3.5 text-neutral-700" />
+            <Zap className="w-3.5 h-3.5 text-neutral-500" />
           </div>
           <div className="text-2xl font-bold font-mono text-neutral-900">
             ${(overview?.totalAiCostUsd ?? 0).toFixed(4)}
@@ -430,7 +430,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
       </div>
 
       {/* Conversation Intelligence Workspace & Dual-Pane Dialogue View */}
-      <div className="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm space-y-4 text-neutral-900">
+      <div className="p-6 rounded-2xl bg-white border border-neutral-200/80 shadow-sm space-y-4 text-neutral-900">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
@@ -447,7 +447,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
         {/* Conversation List Table */}
         <div className="overflow-x-auto rounded-xl border border-neutral-200">
           <table className="w-full text-left text-xs">
-            <thead className="bg-neutral-50 text-neutral-600 font-semibold border-b border-neutral-200 uppercase tracking-wider text-[10px]">
+            <thead className="bg-neutral-50/80 text-neutral-500 font-semibold border-b border-neutral-200 uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="py-2.5 px-3">Conversation ID</th>
                 <th className="py-2.5 px-3">Store Location</th>
@@ -464,10 +464,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                 const isSelected = selectedConversationId === c.id;
                 const bandColor =
                   c.intentBand === 'high'
-                    ? 'text-white bg-black font-bold'
+                    ? 'text-neutral-900 bg-neutral-100 border border-neutral-300 font-semibold'
                     : c.intentBand === 'medium'
-                    ? 'text-neutral-800 bg-neutral-100 border border-neutral-300'
-                    : 'text-neutral-500 bg-neutral-100';
+                    ? 'text-neutral-700 bg-neutral-100 border border-neutral-200'
+                    : 'text-neutral-500 bg-neutral-50 border border-neutral-200';
 
                 return (
                   <tr
@@ -475,19 +475,19 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                     onClick={() => void loadConversationDetails(c.id)}
                     className={`cursor-pointer transition ${
                       isSelected
-                        ? 'bg-neutral-100 text-black font-medium'
-                        : 'hover:bg-neutral-50 text-neutral-700'
+                        ? 'bg-neutral-100 text-neutral-900 font-medium'
+                        : 'hover:bg-neutral-50/80 text-neutral-600'
                     }`}
                   >
                     <td className="py-2.5 px-3 font-medium flex items-center gap-1.5 text-neutral-900">
                       <span>{c.id}</span>
                       {c.isDemo && (
-                        <span className="px-1.5 py-0.2 rounded text-[9px] bg-neutral-100 text-neutral-700 font-sans font-semibold border border-neutral-200">
+                        <span className="px-1.5 py-0.2 rounded text-[9px] bg-neutral-100 text-neutral-700 font-sans font-medium border border-neutral-200">
                           Demo
                         </span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 font-sans text-neutral-700">{c.storeId}</td>
+                    <td className="py-2.5 px-3 font-sans text-neutral-600">{c.storeId}</td>
                     <td className="py-2.5 px-3 font-sans">
                       {c.externalCustomerId ? (
                         <span className="text-neutral-900 font-medium">
@@ -497,17 +497,17 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                           )}
                         </span>
                       ) : (
-                        <span className="text-neutral-400 italic">Anonymous Walk-in</span>
+                        <span className="text-neutral-500 italic">Anonymous Walk-in</span>
                       )}
                     </td>
-                    <td className="py-2.5 px-3 text-center">{c.segmentCount}</td>
+                    <td className="py-2.5 px-3 text-center text-neutral-600">{c.segmentCount}</td>
                     <td className="py-2.5 px-3 text-center">
                       {c.intentScore !== undefined ? (
                         <span className={`px-2 py-0.5 rounded-full text-[10px] ${bandColor}`}>
                           {c.intentScore} ({c.intentBand})
                         </span>
                       ) : (
-                        <span className="text-neutral-400">—</span>
+                        <span className="text-neutral-500">—</span>
                       )}
                     </td>
                     <td className="py-2.5 px-3 text-center">
@@ -515,7 +515,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                         {c.workflowState || 'DONE'}
                       </span>
                       {c.workflowDurationMs ? (
-                        <span className="text-[10px] text-neutral-400 ml-1">({c.workflowDurationMs}ms)</span>
+                        <span className="text-[10px] text-neutral-500 ml-1">({c.workflowDurationMs}ms)</span>
                       ) : null}
                     </td>
                     <td className="py-2.5 px-3 text-neutral-500 font-sans text-[11px]">
@@ -529,7 +529,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                         }}
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-sans font-medium transition ${
                           isSelected
-                            ? 'bg-black text-white font-semibold'
+                            ? 'bg-white text-black font-bold shadow-sm'
                             : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-800 border border-neutral-200'
                         }`}
                       >
@@ -545,7 +545,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
 
         {/* Dual-Pane Dialogue & Intelligence Inspector */}
         {selectedConversationId && (
-          <div className="pt-4 border-t border-neutral-100 space-y-3">
+          <div className="pt-4 border-t border-neutral-200 space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-600 flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-neutral-800" />
@@ -559,7 +559,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
             {conversationDetails && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 {/* Left Pane: Real Dialogue Transcript */}
-                <div className="lg:col-span-6 p-4 rounded-xl bg-neutral-50 border border-neutral-200 space-y-3 max-h-[520px] overflow-y-auto">
+                <div className="lg:col-span-6 p-4 rounded-xl bg-neutral-50/60 border border-neutral-200 space-y-3 max-h-[520px] overflow-y-auto">
                   <div className="flex items-center justify-between border-b border-neutral-200 pb-2">
                     <span className="text-xs font-semibold text-neutral-900">Showroom Dialogue Transcript</span>
                     <span className="text-[11px] font-mono text-neutral-500">
@@ -575,15 +575,15 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                           key={seg.id}
                           className={`p-3 rounded-xl text-xs space-y-1 ${
                             isAdvisor
-                              ? 'bg-black text-white ml-4 shadow-sm'
-                              : 'bg-white border border-neutral-200 text-neutral-900 mr-4 shadow-xs'
+                              ? 'bg-neutral-900 text-white ml-4 shadow-sm'
+                              : 'bg-white border border-neutral-200 text-neutral-800 mr-4 shadow-sm'
                           }`}
                         >
                           <div className="flex items-center justify-between text-[10px] font-mono">
-                            <span className={isAdvisor ? 'text-white font-bold' : 'text-neutral-500 font-bold'}>
+                            <span className={isAdvisor ? 'text-neutral-300 font-bold' : 'text-neutral-500 font-bold'}>
                               {isAdvisor ? 'Advisor' : 'Customer'}
                             </span>
-                            <span className={isAdvisor ? 'text-neutral-300' : 'text-neutral-400'}>
+                            <span className={isAdvisor ? 'text-neutral-400' : 'text-neutral-400'}>
                               +{Math.floor(seg.startMs / 1000)}s
                             </span>
                           </div>
@@ -595,20 +595,20 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                 </div>
 
                 {/* Right Pane: Intelligence, Grounded Signals & FloorCoach Guidance */}
-                <div className="lg:col-span-6 p-4 rounded-xl bg-neutral-50 border border-neutral-200 space-y-4 max-h-[520px] overflow-y-auto text-xs text-neutral-900">
+                <div className="lg:col-span-6 p-4 rounded-xl bg-neutral-50/60 border border-neutral-200 space-y-4 max-h-[520px] overflow-y-auto text-xs text-neutral-900">
                   {/* Summary & Intent */}
-                  <div className="p-3 rounded-xl bg-white border border-neutral-200 space-y-2 shadow-xs">
+                  <div className="p-3 rounded-xl bg-white border border-neutral-200 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-semibold uppercase text-neutral-500">Signal Assessment</span>
                       {conversationDetails.intelligence.intentScore !== undefined && (
-                        <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-black text-white">
+                        <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-neutral-900 text-white">
                           Score: {conversationDetails.intelligence.intentScore} (
                           {conversationDetails.intelligence.intentBand})
                         </span>
                       )}
                     </div>
                     {conversationDetails.intelligence.summary && (
-                      <p className="text-neutral-700 leading-relaxed text-[11px]">
+                      <p className="text-neutral-600 leading-relaxed text-[11px]">
                         {conversationDetails.intelligence.summary}
                       </p>
                     )}
@@ -653,7 +653,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                               <div className="font-semibold text-neutral-900 uppercase tracking-wider text-[10px]">
                                 Type: {o.objectionType || o.type || 'General'}
                               </div>
-                              <blockquote className="text-neutral-600 italic">
+                              <blockquote className="text-neutral-500 italic">
                                 &ldquo;{o.customerQuote || o.quote || ''}&rdquo;
                               </blockquote>
                             </div>
@@ -667,7 +667,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                   {(conversationDetails.intelligence.suggestedResponses?.length ?? 0) > 0 && (
                     <div className="space-y-1.5">
                       <span className="text-[11px] font-semibold uppercase text-neutral-500 flex items-center gap-1.5">
-                        <Sparkles className="w-3 h-3 text-neutral-800" />
+                        <Sparkles className="w-3 h-3 text-neutral-700" />
                         FloorCoach Real-Time Recommendations
                       </span>
                       <div className="space-y-2">
@@ -680,13 +680,13 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                               className="p-2.5 rounded-lg bg-white border border-neutral-200 space-y-1 text-[11px]"
                             >
                               <div className="font-semibold text-neutral-900">{item.topic}</div>
-                              <p className="text-neutral-700">{item.guidance || item.response}</p>
+                              <p className="text-neutral-600">{item.guidance || item.response}</p>
                               {facts.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {facts.map((fact, fIdx) => (
                                     <span
                                       key={fIdx}
-                                      className="px-1.5 py-0.5 rounded text-[9px] bg-neutral-100 text-neutral-800 border border-neutral-200 font-mono"
+                                      className="px-1.5 py-0.5 rounded text-[9px] bg-neutral-100 text-neutral-700 border border-neutral-200 font-mono"
                                     >
                                       Fact: {fact}
                                     </span>
@@ -712,10 +712,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                             key={idx}
                             className={`px-2 py-1 rounded-md text-[10px] font-mono border ${
                               sig.weight > 0
-                                ? 'bg-black text-white font-bold border-black'
+                                ? 'bg-neutral-100 text-neutral-900 font-bold border-neutral-300'
                                 : sig.weight < 0
-                                ? 'bg-neutral-200 text-neutral-800 border-neutral-300'
-                                : 'bg-white text-neutral-600 border-neutral-200'
+                                ? 'bg-neutral-50 text-neutral-600 border-neutral-200'
+                                : 'bg-neutral-50 text-neutral-500 border-neutral-200'
                             }`}
                           >
                             {sig.label}:{' '}
@@ -728,7 +728,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
 
                   {/* Governed Follow-Up Draft */}
                   {conversationDetails.drafts.length > 0 && conversationDetails.drafts[0] && (
-                    <div className="p-3 rounded-xl bg-white border border-neutral-200 space-y-2 shadow-xs">
+                    <div className="p-3 rounded-xl bg-white border border-neutral-200 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-semibold uppercase text-neutral-500">
                           Follow-Up Communication Draft
@@ -736,10 +736,10 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase ${
                             conversationDetails.drafts[0]!.status === 'approved'
-                              ? 'bg-black text-white'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                               : conversationDetails.drafts[0]!.status === 'rejected'
-                              ? 'bg-neutral-200 text-neutral-700'
-                              : 'bg-neutral-100 text-neutral-800 border border-neutral-200'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : 'bg-neutral-100 text-neutral-700 border border-neutral-200'
                           }`}
                         >
                           {conversationDetails.drafts[0]!.status} ({conversationDetails.drafts[0]!.channel})
@@ -751,7 +751,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                         </div>
                       )}
                       {conversationDetails.drafts[0]!.message && (
-                        <p className="text-[11px] text-neutral-800 font-mono bg-neutral-50 p-2 rounded border border-neutral-200 leading-relaxed">
+                        <p className="text-[11px] text-neutral-600 font-mono bg-neutral-50 p-2 rounded border border-neutral-200 leading-relaxed">
                           {conversationDetails.drafts[0]!.message}
                         </p>
                       )}
@@ -767,7 +767,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
       {/* Row: Shopper Insights, Queue, and Store Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Shopper Insights Aggregation */}
-        <div className="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm space-y-4 text-neutral-900">
+        <div className="p-6 rounded-2xl bg-white border border-neutral-200/80 shadow-sm space-y-4 text-neutral-900">
           <div className="space-y-0.5">
             <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
               <Users className="w-4 h-4 text-neutral-800" />
@@ -786,9 +786,9 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                     {shopperInsights.intentBandDistribution.high}
                   </span>
                 </div>
-                <div className="w-full bg-neutral-100 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-neutral-900 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-black h-full rounded-full"
+                    className="bg-white h-full rounded-full"
                     style={{
                       width: `${(shopperInsights.intentBandDistribution.high /
                         Math.max(1, shopperInsights.totalShoppersAnalyzed)) *
@@ -800,14 +800,14 @@ export const RetailAnalyticsDashboard: React.FC = () => {
 
               <div className="space-y-1.5">
                 <div className="flex justify-between text-[11px]">
-                  <span className="text-neutral-700 font-medium">Medium Intent (40 - 69)</span>
-                  <span className="font-mono text-neutral-700 font-semibold">
+                  <span className="text-neutral-600 font-medium">Medium Intent (40 - 69)</span>
+                  <span className="font-mono text-neutral-600 font-semibold">
                     {shopperInsights.intentBandDistribution.medium}
                   </span>
                 </div>
-                <div className="w-full bg-neutral-100 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-neutral-900 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-neutral-600 h-full rounded-full"
+                    className="bg-neutral-400 h-full rounded-full"
                     style={{
                       width: `${(shopperInsights.intentBandDistribution.medium /
                         Math.max(1, shopperInsights.totalShoppersAnalyzed)) *
@@ -824,9 +824,9 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                     {shopperInsights.intentBandDistribution.low}
                   </span>
                 </div>
-                <div className="w-full bg-neutral-100 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-neutral-900 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-neutral-400 h-full rounded-full"
+                    className="bg-neutral-600 h-full rounded-full"
                     style={{
                       width: `${(shopperInsights.intentBandDistribution.low /
                         Math.max(1, shopperInsights.totalShoppersAnalyzed)) *
@@ -838,14 +838,14 @@ export const RetailAnalyticsDashboard: React.FC = () => {
 
               <div className="space-y-1.5">
                 <div className="flex justify-between text-[11px]">
-                  <span className="text-neutral-400 font-medium">Abstained (Thin Dialogue)</span>
-                  <span className="font-mono text-neutral-400">
+                  <span className="text-neutral-500 font-medium">Abstained (Thin Dialogue)</span>
+                  <span className="font-mono text-neutral-500">
                     {shopperInsights.intentBandDistribution.abstained}
                   </span>
                 </div>
-                <div className="w-full bg-neutral-100 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-neutral-900 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-neutral-300 h-full rounded-full"
+                    className="bg-neutral-700 h-full rounded-full"
                     style={{
                       width: `${(shopperInsights.intentBandDistribution.abstained /
                         Math.max(1, shopperInsights.totalShoppersAnalyzed)) *
@@ -856,14 +856,14 @@ export const RetailAnalyticsDashboard: React.FC = () => {
               </div>
 
               {/* Identified vs Returning Comparison */}
-              <div className="pt-3 border-t border-neutral-100 grid grid-cols-2 gap-3 text-center">
-                <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
+              <div className="pt-3 border-t border-neutral-200 grid grid-cols-2 gap-3 text-center">
+                <div className="p-2.5 rounded-xl bg-neutral-50/60 border border-neutral-200">
                   <div className="text-[10px] uppercase text-neutral-500 font-semibold">Identified Shoppers</div>
                   <div className="text-base font-bold font-mono text-neutral-900">
                     {shopperInsights.identifiedShoppers}
                   </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
+                <div className="p-2.5 rounded-xl bg-neutral-50/60 border border-neutral-200">
                   <div className="text-[10px] uppercase text-neutral-500 font-semibold">Returning Visitors</div>
                   <div className="text-base font-bold font-mono text-neutral-900">
                     {shopperInsights.returningVisitors}
@@ -880,7 +880,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                   <div className="space-y-1">
                     {(shopperInsights.topProductInterests ?? []).slice(0, 3).map((p, idx) => (
                       <div key={idx} className="flex items-center justify-between text-[11px]">
-                        <span className="text-neutral-800 truncate">{p.name}</span>
+                        <span className="text-neutral-600 truncate">{p.name}</span>
                         <span className="font-mono text-neutral-500 ml-2">{p.count} inquiries</span>
                       </div>
                     ))}
@@ -892,7 +892,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* Governed Follow-Up Queue Breakdown */}
-        <div className="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm space-y-4 text-neutral-900">
+        <div className="p-6 rounded-2xl bg-white border border-neutral-200/80 shadow-sm space-y-4 text-neutral-900">
           <div className="space-y-0.5">
             <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-neutral-800" />
@@ -905,20 +905,20 @@ export const RetailAnalyticsDashboard: React.FC = () => {
             <div className="space-y-4 text-xs">
               {/* Status summary */}
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
+                <div className="p-2.5 rounded-xl bg-neutral-50/60 border border-neutral-200">
                   <div className="text-[10px] uppercase text-neutral-500 font-semibold">Pending</div>
                   <div className="text-lg font-bold font-mono text-neutral-900">
                     {queueMetrics.byStatus.draft}
                   </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
-                  <div className="text-[10px] uppercase text-neutral-900 font-semibold">Approved</div>
+                <div className="p-2.5 rounded-xl bg-neutral-50/60 border border-neutral-200">
+                  <div className="text-[10px] uppercase text-neutral-500 font-semibold">Approved</div>
                   <div className="text-lg font-bold font-mono text-neutral-900">
                     {queueMetrics.byStatus.approved}
                   </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200">
-                  <div className="text-[10px] uppercase text-neutral-400 font-semibold">Rejected</div>
+                <div className="p-2.5 rounded-xl bg-neutral-50/60 border border-neutral-200">
+                  <div className="text-[10px] uppercase text-neutral-500 font-semibold">Rejected</div>
                   <div className="text-lg font-bold font-mono text-neutral-500">
                     {queueMetrics.byStatus.rejected}
                   </div>
@@ -926,25 +926,25 @@ export const RetailAnalyticsDashboard: React.FC = () => {
               </div>
 
               {/* Channel breakdown */}
-              <div className="space-y-2 pt-2 border-t border-neutral-100">
+              <div className="space-y-2 pt-2 border-t border-neutral-200">
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-500">
                   Channel Distribution
                 </span>
                 <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
-                  <div className="p-2 rounded bg-neutral-50 border border-neutral-200 flex justify-between">
-                    <span className="text-neutral-700">WhatsApp:</span>
+                  <div className="p-2 rounded bg-neutral-50/60 border border-neutral-200 flex justify-between">
+                    <span className="text-neutral-600">WhatsApp:</span>
                     <span className="font-bold text-neutral-900">{queueMetrics.byChannel.whatsapp}</span>
                   </div>
-                  <div className="p-2 rounded bg-neutral-50 border border-neutral-200 flex justify-between">
-                    <span className="text-neutral-700">Email:</span>
+                  <div className="p-2 rounded bg-neutral-50/60 border border-neutral-200 flex justify-between">
+                    <span className="text-neutral-600">Email:</span>
                     <span className="font-bold text-neutral-900">{queueMetrics.byChannel.email}</span>
                   </div>
-                  <div className="p-2 rounded bg-neutral-50 border border-neutral-200 flex justify-between">
-                    <span className="text-neutral-700">Call Task:</span>
+                  <div className="p-2 rounded bg-neutral-50/60 border border-neutral-200 flex justify-between">
+                    <span className="text-neutral-600">Call Task:</span>
                     <span className="font-bold text-neutral-900">{queueMetrics.byChannel.call_task}</span>
                   </div>
-                  <div className="p-2 rounded bg-neutral-50 border border-neutral-200 flex justify-between">
-                    <span className="text-neutral-400">Blocked:</span>
+                  <div className="p-2 rounded bg-neutral-50/60 border border-neutral-200 flex justify-between">
+                    <span className="text-neutral-500">Blocked:</span>
                     <span className="font-bold text-neutral-500">{queueMetrics.byChannel.none}</span>
                   </div>
                 </div>
@@ -954,7 +954,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
         </div>
 
         {/* Store & Conversion Insights */}
-        <div className="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm space-y-4 text-neutral-900">
+        <div className="p-6 rounded-2xl bg-white border border-neutral-200/80 shadow-sm space-y-4 text-neutral-900">
           <div className="space-y-0.5">
             <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-neutral-800" />
@@ -975,23 +975,23 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                     {(storeInsights.frequentObjections ?? []).map((obj, idx) => (
                       <div
                         key={idx}
-                        className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-200 space-y-1 text-[11px]"
+                        className="p-2.5 rounded-xl bg-neutral-50/60 border border-neutral-200 space-y-1 text-[11px]"
                       >
                         <div className="flex justify-between font-semibold text-neutral-900">
                           <span>{obj.type}</span>
                           <span className="font-mono text-neutral-500">{obj.count} occurrences</span>
                         </div>
-                        <p className="text-neutral-600 italic text-[10px] truncate">&ldquo;{obj.sampleQuote || ''}&rdquo;</p>
+                        <p className="text-neutral-500 italic text-[10px] truncate">&ldquo;{obj.sampleQuote || ''}&rdquo;</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-neutral-400 italic text-[11px]">No recurring objections recorded.</p>
+                  <p className="text-neutral-500 italic text-[11px]">No recurring objections recorded.</p>
                 )}
               </div>
 
               {/* Missed conversions */}
-              <div className="space-y-1.5 pt-2 border-t border-neutral-100">
+              <div className="space-y-1.5 pt-2 border-t border-neutral-200">
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-500">
                   Missed Conversion Reasons
                 </span>
@@ -1000,15 +1000,15 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                     {storeInsights.missedConversionReasons.map((m, idx) => (
                       <div
                         key={idx}
-                        className="flex justify-between items-center text-[11px] p-2 rounded-xl bg-neutral-50 border border-neutral-200"
+                        className="flex justify-between items-center text-[11px] p-2 rounded-xl bg-neutral-50/60 border border-neutral-200"
                       >
-                        <span className="text-neutral-800 truncate">{m.reason}</span>
+                        <span className="text-neutral-600 truncate">{m.reason}</span>
                         <span className="font-mono text-neutral-900 ml-2 font-bold">{m.count}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-neutral-400 italic text-[11px]">No missed conversions recorded.</p>
+                  <p className="text-neutral-500 italic text-[11px]">No missed conversions recorded.</p>
                 )}
               </div>
             </div>
@@ -1018,7 +1018,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
 
       {/* Agent Activity & System Telemetry */}
       {agentActivity && (
-        <div className="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm space-y-4 text-neutral-900">
+        <div className="p-6 rounded-2xl bg-white border border-neutral-200/80 shadow-sm space-y-4 text-neutral-900">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <h3 className="text-base font-bold text-neutral-900 flex items-center gap-2">
@@ -1029,7 +1029,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                 Invocations, latency percentiles, token usage, and API execution telemetry across agents.
               </p>
             </div>
-            <div className="text-xs font-mono text-neutral-600">
+            <div className="text-xs font-mono text-neutral-500">
               Total Invocations: <strong className="text-neutral-900 font-bold">{agentActivity.totalInvocations ?? 0}</strong> | Total Cost:{' '}
               <strong className="text-neutral-900 font-bold">${(agentActivity.overallCostUsd ?? agentActivity.totalCostUsd ?? 0).toFixed(4)}</strong>
             </div>
@@ -1039,18 +1039,18 @@ export const RetailAnalyticsDashboard: React.FC = () => {
             {Object.entries(agentActivity.agents ?? {}).map(([agentName, metrics]) => (
               <div
                 key={agentName}
-                className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 space-y-2.5 text-xs font-mono text-neutral-900"
+                className="p-4 rounded-xl bg-neutral-50/60 border border-neutral-200 space-y-2.5 text-xs font-mono text-neutral-900"
               >
                 <div className="flex items-center justify-between font-sans">
                   <span className="font-bold text-neutral-900 uppercase tracking-wide text-[11px]">
                     {agentName.replace('_', ' ')}
                   </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-black text-white font-bold">
+                  <span className="px-2 py-0.5 rounded text-[10px] bg-white text-black font-bold">
                     {metrics?.successRatePercentage ?? 100}% pass
                   </span>
                 </div>
 
-                <div className="space-y-1 text-[11px] text-neutral-700">
+                <div className="space-y-1 text-[11px] text-neutral-600">
                   <div className="flex justify-between">
                     <span className="text-neutral-500">Invocations:</span>
                     <span className="font-semibold text-neutral-900">{metrics?.invocations ?? 0}</span>
