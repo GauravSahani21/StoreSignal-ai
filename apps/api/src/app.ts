@@ -165,9 +165,17 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   const knowledgeStore = options.knowledgeStore ?? new KnowledgeStore(embeddingProvider);
   const retrievalService = options.retrievalService ?? new RetrievalService(knowledgeStore, embeddingProvider);
 
-  // Auto-seed default knowledge documents unless skipped
+  // Auto-seed default knowledge documents and demo showroom data unless skipped
   if (!options.skipAutoSeed) {
     await seedKnowledgeBase(knowledgeStore, 'org-vayu-motors-dev');
+    if (env.NODE_ENV !== 'test') {
+      const { seedDatabase } = await import('./database/seed.js');
+      const { ExperimentService } = await import('./experiments/ExperimentService.js');
+      await seedDatabase(repositories);
+      const experimentService = new ExperimentService(repositories);
+      await experimentService.seedDemoExperiments('org-vayu-motors-dev');
+      await authService.seedDefaultUsers('org-vayu-motors-dev');
+    }
   }
 
   // Register routes

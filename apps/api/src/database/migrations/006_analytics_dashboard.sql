@@ -21,7 +21,8 @@ CREATE INDEX IF NOT EXISTS idx_usage_events_org_created ON usage_events(org_id, 
 CREATE INDEX IF NOT EXISTS idx_usage_events_org_agent ON usage_events(org_id, agent);
 CREATE INDEX IF NOT EXISTS idx_usage_events_conv ON usage_events(conversation_id);
 
--- Additional indexes on conversations and store_events for analytics queries
+-- Additional columns and indexes on conversations and store_events for analytics queries
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS store_id VARCHAR(64);
 CREATE INDEX IF NOT EXISTS idx_conversations_org_store_created ON conversations(org_id, store_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_conversations_org_is_demo ON conversations(org_id, is_demo);
 CREATE INDEX IF NOT EXISTS idx_store_events_org_type ON store_events(org_id, type);
