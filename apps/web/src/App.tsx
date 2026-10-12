@@ -10,7 +10,6 @@ import {
   Mic,
   MicOff,
   Phone,
-  Play,
   RotateCcw,
   Save,
   Send,
@@ -36,6 +35,7 @@ import {
   Zap,
   CheckCircle,
   FileText,
+  Loader2,
 } from 'lucide-react';
 import { RetailAnalyticsDashboard } from './components/RetailAnalyticsDashboard.js';
 import { ExperimentationDashboard } from './components/ExperimentationDashboard.js';
@@ -223,14 +223,25 @@ export const App: React.FC = () => {
   const [isPingingAi, setIsPingingAi] = useState(false);
   const [aiPingLatency, setAiPingLatency] = useState<number | null>(null);
 
-  // Audio Ingestion & Dialogue States
+  // Audio Ingestion & Live Microphone States
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordDuration, setRecordDuration] = useState(0);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [liveInterimText, setLiveInterimText] = useState<string>('');
+  const [audioLevels, setAudioLevels] = useState<number[]>([8, 12, 10, 14, 8, 12, 10, 14, 8, 12, 10, 14]);
   const [consentGranted, setConsentGranted] = useState(true);
   const [rawText, setRawText] = useState(SAMPLE_TRANSCRIPTS.commuter);
   const [ingestedConversation, setIngestedConversation] = useState<ConversationResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+  const audioStreamRef = React.useRef<MediaStream | null>(null);
+  const audioContextRef = React.useRef<AudioContext | null>(null);
+  const animationFrameRef = React.useRef<number | null>(null);
+  const chunksRef = React.useRef<Blob[]>([]);
+  const speechRecognitionRef = React.useRef<any>(null);
 
   // Follow-up Queue State
   const [drafts, setDrafts] = useState<FollowUpDraft[]>([]);
@@ -258,12 +269,12 @@ export const App: React.FC = () => {
   const [outcomeValue, setOutcomeValue] = useState<number>(84500);
   const [isRecordingOutcome, setIsRecordingOutcome] = useState(false);
 
-  // NVIDIA NIM Test Runner State
+  // Groq LPU Test Runner State
   const [testPrompt, setTestPrompt] = useState('Explain the mileage and on-road pricing benefits of the Prithvi 110 for daily commuter riders.');
   const [testResponse, setTestResponse] = useState<string | null>(null);
   const [isTestingGroq, setIsTestingGroq] = useState(false);
 
-  // Timer for active recording simulation
+  // Timer for active recording
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isRecording) {
@@ -275,6 +286,202 @@ export const App: React.FC = () => {
       if (interval) clearInterval(interval);
     };
   }, [isRecording]);
+
+  const startRecording = async () => {
+    setAudioError(null);
+    setLiveInterimText('');
+    chunksRef.current = [];
+
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Audio recording is not supported in this browser.');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioStreamRef.current = stream;
+
+      // Real AudioContext & AnalyserNode for live visualizer
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          const audioCtx = new AudioCtx();
+          audioContextRef.current = audioCtx;
+          const source = audioCtx.createMediaStreamSource(stream);
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+          source.connect(analyser);
+
+          const dataArray = new Uint8Array(analyser.frequencyBinCount);
+          const updateLevels = () => {
+            analyser.getByteFrequencyData(dataArray);
+            const levels: number[] = [];
+            const step = Math.max(1, Math.floor(dataArray.length / 12));
+            for (let i = 0; i < 12; i++) {
+              const val = dataArray[i * step] || 0;
+              levels.push(Math.max(6, Math.min(48, Math.round((val / 255) * 48))));
+            }
+            setAudioLevels(levels);
+            animationFrameRef.current = requestAnimationFrame(updateLevels);
+          };
+          updateLevels();
+        }
+      } catch (e) {
+        console.warn('AudioContext visualizer setup skipped:', e);
+      }
+
+      // MediaRecorder setup
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : MediaRecorder.isTypeSupported('audio/mp4')
+          ? 'audio/mp4'
+          : '';
+      }
+
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      // Optional Browser SpeechRecognition for live interim preview
+      try {
+        const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRec) {
+          const rec = new SpeechRec();
+          rec.continuous = true;
+          rec.interimResults = true;
+          rec.lang = 'en-IN';
+          rec.onresult = (event: any) => {
+            let current = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              current += event.results[i][0].transcript;
+            }
+            if (current.trim()) {
+              setLiveInterimText(current);
+            }
+          };
+          rec.onerror = () => {};
+          rec.start();
+          speechRecognitionRef.current = rec;
+        }
+      } catch {
+        // SpeechRecognition optional
+      }
+
+      recorder.start(250);
+      setIsRecording(true);
+      setRecordDuration(0);
+      setStatusMessage('Microphone recording active. Speak naturally...');
+    } catch (err: any) {
+      console.error('Failed to start recording:', err);
+      const msg = err.name === 'NotAllowedError'
+        ? 'Microphone permission was denied. Please allow microphone access in your browser address bar.'
+        : err.message || 'Failed to access microphone.';
+      setAudioError(msg);
+      setStatusMessage(`Microphone error: ${msg}`);
+      setIsRecording(false);
+    }
+  };
+
+  const stopRecording = () => {
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
+      setIsRecording(false);
+      return;
+    }
+
+    const recorder = mediaRecorderRef.current;
+    setIsRecording(false);
+    setIsTranscribing(true);
+    setStatusMessage('Transcribing microphone audio with Groq Whisper LPU...');
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach((track) => track.stop());
+      audioStreamRef.current = null;
+    }
+
+    if (speechRecognitionRef.current) {
+      try {
+        speechRecognitionRef.current.stop();
+      } catch {}
+      speechRecognitionRef.current = null;
+    }
+
+    recorder.onstop = async () => {
+      const mime = recorder.mimeType || 'audio/webm';
+      const audioBlob = new Blob(chunksRef.current, { type: mime });
+      chunksRef.current = [];
+
+      if (audioBlob.size < 500) {
+        setIsTranscribing(false);
+        setStatusMessage('Recording was too short to transcribe.');
+        return;
+      }
+
+      try {
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+          try {
+            const base64Audio = (reader.result as string).split(',')[1];
+            const res = await fetch('http://localhost:3001/api/audio/transcribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                audioBase64: base64Audio,
+                mimeType: audioBlob.type || 'audio/webm',
+                durationMs: recordDuration * 1000,
+              }),
+            });
+
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              throw new Error(err.error?.message || `HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            if (data.text && data.text.trim()) {
+              setRawText(data.text);
+              setStatusMessage('Audio successfully transcribed via Groq Whisper LPU! Ready for ingestion.');
+            } else if (liveInterimText.trim()) {
+              setRawText(`[00:00:02] Customer: ${liveInterimText.trim()}`);
+              setStatusMessage('Transcribed via browser speech recognition engine.');
+            } else {
+              setStatusMessage('No audible speech detected. Try speaking closer to the microphone.');
+            }
+          } catch (err: any) {
+            console.error('Transcription error:', err);
+            if (liveInterimText.trim()) {
+              setRawText(`[00:00:02] Customer: ${liveInterimText.trim()}`);
+              setStatusMessage('Fell back to browser speech recognition.');
+            } else {
+              setStatusMessage(`Transcription failed: ${err.message || 'Unknown error'}`);
+            }
+          } finally {
+            setIsTranscribing(false);
+          }
+        };
+      } catch (err: any) {
+        setIsTranscribing(false);
+        setStatusMessage(`Audio upload error: ${err.message}`);
+      }
+    };
+
+    recorder.stop();
+  };
 
   const fetchHealth = async () => {
     try {
@@ -339,11 +546,11 @@ export const App: React.FC = () => {
       }
       const data = await res.json();
       setTestResponse(
-        `[GROQ LPU Gateway • ${data.model} • ${data.latencyMs}ms]\n\n${data.response}`
+        `[${(aiHealth?.provider || 'Groq').toUpperCase()} Gateway • ${data.model} • ${data.latencyMs}ms]\n\n${data.response}`
       );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Inference error';
-      setTestResponse(`Error executing prompt through Groq Gateway: ${msg}`);
+      setTestResponse(`Error executing prompt through AI Gateway: ${msg}`);
     } finally {
       setIsTestingGroq(false);
     }
@@ -377,10 +584,10 @@ export const App: React.FC = () => {
           anonymous
             ? { anonymousId: `anon-${Date.now()}` }
             : {
-                externalCustomerId: shopperExternalIdInput.trim() || 'CUST-8831',
-                hasConsent: true,
-                authorizer: 'advisor-neha-12',
-              }
+              externalCustomerId: shopperExternalIdInput.trim() || 'CUST-8831',
+              hasConsent: true,
+              authorizer: 'advisor-neha-12',
+            }
         ),
       });
       if (!resolveRes.ok) throw new Error('Failed to resolve shopper identity');
@@ -746,11 +953,10 @@ export const App: React.FC = () => {
           <nav className="hidden md:flex items-center gap-1 bg-neutral-100/90 p-1 rounded-xl border border-neutral-200/60 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
             <button
               onClick={() => navigateTo('analytics')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                currentPage === 'analytics'
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${currentPage === 'analytics'
                   ? 'bg-white text-neutral-900 shadow-sm font-semibold'
                   : 'text-neutral-500 hover:text-neutral-900 hover:bg-white/60'
-              }`}
+                }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />
               Analytics
@@ -758,11 +964,10 @@ export const App: React.FC = () => {
 
             <button
               onClick={() => navigateTo('studio')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                currentPage === 'studio'
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${currentPage === 'studio'
                   ? 'bg-white text-neutral-900 shadow-sm font-semibold'
                   : 'text-neutral-500 hover:text-neutral-900 hover:bg-white/60'
-              }`}
+                }`}
             >
               <Mic className="w-3.5 h-3.5" />
               Audio Studio
@@ -770,11 +975,10 @@ export const App: React.FC = () => {
 
             <button
               onClick={() => navigateTo('coach')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                currentPage === 'coach'
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${currentPage === 'coach'
                   ? 'bg-white text-neutral-900 shadow-sm font-semibold'
                   : 'text-neutral-500 hover:text-neutral-900 hover:bg-white/60'
-              }`}
+                }`}
             >
               <Cpu className="w-3.5 h-3.5" />
               Floor Coach
@@ -782,11 +986,10 @@ export const App: React.FC = () => {
 
             <button
               onClick={() => navigateTo('shoppers')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                currentPage === 'shoppers'
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${currentPage === 'shoppers'
                   ? 'bg-white text-neutral-900 shadow-sm font-semibold'
                   : 'text-neutral-500 hover:text-neutral-900 hover:bg-white/60'
-              }`}
+                }`}
             >
               <UserCheck className="w-3.5 h-3.5" />
               Shoppers
@@ -794,11 +997,10 @@ export const App: React.FC = () => {
 
             <button
               onClick={() => navigateTo('experiments')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                currentPage === 'experiments'
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${currentPage === 'experiments'
                   ? 'bg-white text-neutral-900 shadow-sm font-semibold'
                   : 'text-neutral-500 hover:text-neutral-900 hover:bg-white/60'
-              }`}
+                }`}
             >
               <FlaskConical className="w-3.5 h-3.5" />
               Experiments
@@ -806,11 +1008,10 @@ export const App: React.FC = () => {
 
             <button
               onClick={() => navigateTo('system')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                currentPage === 'system'
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${currentPage === 'system'
                   ? 'bg-white text-neutral-900 shadow-sm font-semibold'
                   : 'text-neutral-500 hover:text-neutral-900 hover:bg-white/60'
-              }`}
+                }`}
             >
               <Server className="w-3.5 h-3.5" />
               System &amp; AI
@@ -842,9 +1043,8 @@ export const App: React.FC = () => {
             <button
               key={p}
               onClick={() => navigateTo(p)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize whitespace-nowrap ${
-                currentPage === p ? 'bg-black text-white' : 'text-neutral-600'
-              }`}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold capitalize whitespace-nowrap ${currentPage === p ? 'bg-black text-white' : 'text-neutral-600'
+                }`}
             >
               {p}
             </button>
@@ -863,7 +1063,7 @@ export const App: React.FC = () => {
             </div>
             <button
               onClick={() => setStatusMessage(null)}
-              className="text-neutral-400 hover:text-white p-1 transition"
+              className="text-neutral-500 hover:text-neutral-900 p-1 transition"
             >
               <X className="w-4 h-4" />
             </button>
@@ -960,35 +1160,60 @@ export const App: React.FC = () => {
                     </div>
                   </label>
 
-                  {/* Recording Waveform Mock & Action Controls */}
+                  {/* Error Banner */}
+                  {audioError && (
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0 text-red-500" />
+                      <span>{audioError}</span>
+                    </div>
+                  )}
+
+                  {/* Recording Waveform & Action Controls */}
                   <div className="p-4 rounded-xl bg-neutral-50/70 border border-neutral-200/70 flex flex-col items-center justify-center gap-3">
-                    <div className="flex items-center gap-1.5 h-8">
-                      {[12, 28, 40, 18, 35, 48, 22, 14, 38, 25, 42, 16].map((h, i) => (
+                    <div className="flex items-center gap-1.5 h-12">
+                      {audioLevels.map((h, i) => (
                         <div
                           key={i}
-                          style={{
-                            height: isRecording ? `${h}px` : '6px',
-                            animationDelay: isRecording ? `${i * 80}ms` : '0ms',
-                          }}
-                          className={`w-1 rounded-full transition-all duration-300 ${
-                            isRecording ? 'bg-neutral-800 animate-pulse' : 'bg-neutral-300'
+                          style={{ height: isRecording ? `${h}px` : '8px' }}
+                          className={`w-1.5 rounded-full transition-all duration-75 ${
+                            isRecording ? 'bg-red-500 shadow-sm' : 'bg-neutral-300'
                           }`}
                         />
                       ))}
                     </div>
 
+                    {isRecording && liveInterimText && (
+                      <div className="w-full text-center px-3 py-1.5 rounded-lg bg-neutral-100/80 border border-neutral-200 text-neutral-600 text-xs italic truncate">
+                        Listening: &ldquo;{liveInterimText}&rdquo;
+                      </div>
+                    )}
+
                     <div className="w-full flex items-center gap-3 pt-2">
-                      <button
-                        onClick={() => setIsRecording(!isRecording)}
-                        className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm ${
-                          isRecording
-                            ? 'bg-neutral-100 text-neutral-800 border border-neutral-300 hover:bg-neutral-200'
-                            : 'bg-neutral-900 text-white hover:bg-black font-semibold'
-                        }`}
-                      >
-                        {isRecording ? <MicOff className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                        {isRecording ? 'Stop Recording' : 'Start Audio Recording'}
-                      </button>
+                      {isTranscribing ? (
+                        <button
+                          disabled
+                          className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-neutral-100 text-neutral-600 border border-neutral-300 shadow-sm cursor-not-allowed"
+                        >
+                          <Loader2 className="w-4 h-4 animate-spin text-neutral-900" />
+                          Transcribing with Groq Whisper LPU...
+                        </button>
+                      ) : isRecording ? (
+                        <button
+                          onClick={stopRecording}
+                          className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm bg-red-600 text-white hover:bg-red-700"
+                        >
+                          <MicOff className="w-4 h-4" />
+                          Stop Recording &amp; Transcribe ({recordDuration}s)
+                        </button>
+                      ) : (
+                        <button
+                          onClick={startRecording}
+                          className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm bg-neutral-900 text-white hover:bg-black font-semibold"
+                        >
+                          <Mic className="w-4 h-4 text-red-400" />
+                          Start Live Audio Recording
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -1066,7 +1291,7 @@ export const App: React.FC = () => {
                     <button
                       onClick={handleIngestTranscript}
                       disabled={isSubmitting || !consentGranted}
-                      className="w-full sm:w-auto py-2.5 px-6 rounded-xl text-xs font-bold bg-neutral-900 hover:bg-black disabled:bg-neutral-200 disabled:text-neutral-400 disabled:cursor-not-allowed text-white shadow-sm transition flex items-center justify-center gap-2"
+                      className="w-full sm:w-auto py-2.5 px-6 rounded-xl text-xs font-bold bg-white hover:bg-neutral-200 disabled:bg-neutral-900 disabled:text-neutral-600 text-black shadow-sm transition flex items-center justify-center gap-2"
                     >
                       <Upload className="w-4 h-4" />
                       {isSubmitting ? 'Ingesting Dialogue...' : 'Ingest & Segment Dialogue'}
@@ -1101,11 +1326,10 @@ export const App: React.FC = () => {
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-mono text-neutral-500 font-semibold text-[11px]">{seg.id}</span>
                             <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                                seg.speaker === 'advisor'
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${seg.speaker === 'advisor'
                                   ? 'bg-neutral-900 text-white'
                                   : 'bg-white text-neutral-900 border border-neutral-200 shadow-sm'
-                              }`}
+                                }`}
                             >
                               {seg.speaker}
                             </span>
@@ -1435,13 +1659,12 @@ export const App: React.FC = () => {
                               </div>
 
                               <span
-                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                                  draft.status === 'approved'
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${draft.status === 'approved'
                                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                     : draft.status === 'rejected'
                                       ? 'bg-rose-50 text-rose-700 border border-rose-200'
                                       : 'bg-neutral-100 text-neutral-700 border border-neutral-200'
-                                }`}
+                                  }`}
                               >
                                 {draft.status}
                               </span>
@@ -1660,11 +1883,10 @@ export const App: React.FC = () => {
                               : shopperProfile.shopper.externalCustomerId}
                           </span>
                           <span
-                            className={`px-3 py-0.5 rounded-full text-xs font-bold uppercase ${
-                              shopperProfile.isAnonymous
+                            className={`px-3 py-0.5 rounded-full text-xs font-bold uppercase ${shopperProfile.isAnonymous
                                 ? 'bg-neutral-800 text-neutral-300'
                                 : 'bg-white text-black font-bold'
-                            }`}
+                              }`}
                           >
                             {shopperProfile.isAnonymous ? 'Isolated Anon Session' : 'Identified Customer'}
                           </span>
@@ -1863,11 +2085,10 @@ export const App: React.FC = () => {
                               >
                                 <div className="flex items-center gap-2">
                                   <span
-                                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                      out.type === 'purchase'
+                                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${out.type === 'purchase'
                                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                         : 'bg-neutral-100 text-neutral-700 border border-neutral-200'
-                                    }`}
+                                      }`}
                                   >
                                     {out.type}
                                   </span>
@@ -1964,7 +2185,13 @@ export const App: React.FC = () => {
                         <Cpu className="w-5 h-5" />
                       </div>
                       <div>
-                        <h2 className="text-base font-bold text-neutral-900">Groq LPU AI Gateway</h2>
+                        <h2 className="text-base font-bold text-neutral-900">
+                          {aiHealth?.provider === 'groq'
+                            ? 'Groq LPU AI Gateway'
+                            : aiHealth?.provider === 'nvidia'
+                              ? 'NVIDIA NIM AI Gateway'
+                              : 'OpenRouter AI Gateway'}
+                        </h2>
                         <p className="text-xs text-neutral-400">Ultra-fast live LLM inference</p>
                       </div>
                     </div>
@@ -1977,15 +2204,27 @@ export const App: React.FC = () => {
                   <div className="p-4 rounded-xl bg-neutral-50/70 border border-neutral-200/70 space-y-3 font-mono text-xs">
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
                       <span className="text-neutral-500 font-sans">Provider</span>
-                      <strong className="text-neutral-900 font-bold uppercase">GROQ</strong>
+                      <strong className="text-neutral-900 font-bold uppercase">{aiHealth?.provider || 'groq'}</strong>
                     </div>
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
                       <span className="text-neutral-500 font-sans">Base URL</span>
-                      <span className="text-neutral-700">https://api.groq.com/openai/v1</span>
+                      <span className="text-neutral-700">
+                        {aiHealth?.provider === 'groq'
+                          ? 'https://api.groq.com/openai/v1'
+                          : aiHealth?.provider === 'nvidia'
+                            ? 'https://integrate.api.nvidia.com/v1'
+                            : 'https://openrouter.ai/api/v1'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
                       <span className="text-neutral-500 font-sans">Active Model</span>
-                      <span className="text-neutral-900 font-bold">openai/gpt-oss-120b</span>
+                      <span className="text-neutral-900 font-bold">
+                        {aiHealth?.provider === 'groq'
+                          ? 'openai/gpt-oss-120b'
+                          : aiHealth?.provider === 'nvidia'
+                            ? 'meta/llama-3.2-11b-vision-instruct'
+                            : 'google/gemini-2.0-flash-001'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-neutral-500 font-sans">Gateway Latency</span>
@@ -2000,7 +2239,7 @@ export const App: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-bold text-neutral-900 flex items-center gap-1.5">
                         <Terminal className="w-4 h-4" />
-                        Test Groq LPU Live Inference
+                        Test {aiHealth?.provider === 'groq' ? 'Groq LPU' : 'AI'} Live Inference
                       </div>
                       <button
                         onClick={pingAiGateway}
@@ -2011,7 +2250,7 @@ export const App: React.FC = () => {
                       </button>
                     </div>
                     <p className="text-xs text-neutral-500">
-                      Send a test prompt directly to the live GROQ gateway.
+                      Send a test prompt directly to the live {(aiHealth?.provider || 'Groq').toUpperCase()} gateway.
                     </p>
 
                     <input
@@ -2108,7 +2347,7 @@ export const App: React.FC = () => {
             <span>Enterprise Physical-Retail Intelligence Platform</span>
           </div>
           <div className="flex items-center gap-4 text-[11px] text-neutral-500 font-mono">
-            <span>Model: {aiHealth?.provider === 'groq' ? 'Groq LPU (GPT-OSS 120B)' : 'Groq LPU (GPT-OSS 120B)'}</span>
+            <span>Model: {aiHealth?.provider === 'groq' ? 'Groq LPU (GPT-OSS 120B)' : (aiHealth?.provider === 'nvidia' ? 'NVIDIA NIM Llama 3.2' : 'OpenRouter')}</span>
             <span>&bull;</span>
             <span>Dealership: Vayu Motors</span>
           </div>

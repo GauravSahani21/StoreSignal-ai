@@ -5,6 +5,7 @@ import { segmentTranscript } from '../conversations/segmenter.js';
 import type { Repositories } from '../database/repositories/index.js';
 import {
   NotFoundError,
+  STTEmptyError,
   STTTooLargeError,
   STTUnsupportedFormatError,
   ValidationError,
@@ -33,6 +34,82 @@ export const audioRoutes: FastifyPluginAsync<AudioRoutesOptions> = async (fastif
 
   // In-memory status tracker for transcription jobs
   const jobStatuses = new Map<string, { status: string; error?: string }>();
+
+  // 0. Standalone Audio Transcription Route (Direct Hardware / Mic Ingestion)
+  fastify.post('/api/audio/transcribe', async (request, reply) => {
+    let buffer: Buffer;
+    let mimeType = 'audio/webm';
+    let filename = 'recording.webm';
+    let durationMs: number | undefined;
+
+    if (request.isMultipart && request.isMultipart()) {
+      const part = await request.file();
+      if (!part) {
+        throw new ValidationError('No audio file provided in multipart request.');
+      }
+      buffer = await part.toBuffer();
+      mimeType = part.mimetype || 'audio/webm';
+      filename = part.filename || 'recording.webm';
+    } else {
+      const parseResult = UploadAudioJsonSchema.safeParse(request.body);
+      if (!parseResult.success) {
+        throw new ValidationError(parseResult.error.issues[0]?.message || 'Invalid audio body');
+      }
+      buffer = Buffer.from(parseResult.data.audioBase64, 'base64');
+      mimeType = parseResult.data.mimeType;
+      filename = parseResult.data.filename || 'recording.webm';
+      durationMs = parseResult.data.durationMs;
+    }
+
+    if (buffer.length > audioMaxBytes) {
+      throw new STTTooLargeError(`Audio size (${buffer.length} bytes) exceeds limit of ${audioMaxBytes} bytes.`);
+    }
+
+    try {
+      const sttResult = await sttProvider.transcribe({
+        buffer,
+        mimeType,
+        filename,
+        durationMs,
+        sizeBytes: buffer.length,
+      });
+
+      const raw = sttResult.text?.trim() || '';
+      let formattedText = raw;
+      if (raw && !raw.includes('Customer:') && !raw.includes('Shopper:') && !raw.includes('Advisor:')) {
+        if (sttResult.segments && sttResult.segments.length > 1) {
+          formattedText = sttResult.segments
+            .map((seg, i) => {
+              const startSec = Math.floor((seg.startMs || i * 4000) / 1000);
+              const mm = String(Math.floor(startSec / 60)).padStart(2, '0');
+              const ss = String(startSec % 60).padStart(2, '0');
+              const role = i % 2 === 0 ? 'Customer' : 'Advisor';
+              return `[00:${mm}:${ss}] ${role}: ${seg.text}`;
+            })
+            .join('\n');
+        } else {
+          formattedText = `[00:00:02] Customer: ${raw}`;
+        }
+      }
+
+      return reply.status(200).send({
+        text: formattedText,
+        rawText: raw,
+        segments: sttResult.segments || [],
+        durationMs: sttResult.durationMs || durationMs || 0,
+      });
+    } catch (err: unknown) {
+      if (err instanceof STTEmptyError) {
+        return reply.status(200).send({
+          text: '',
+          rawText: '',
+          segments: [],
+          message: 'No speech detected in recorded audio',
+        });
+      }
+      throw err;
+    }
+  });
 
   // 1. Audio Upload & Transcription Endpoint
   fastify.post('/api/conversations/:id/audio', async (request, reply) => {

@@ -10,6 +10,7 @@ import type { AudioBufferData, STTOptions, STTProvider, STTResult } from './type
 export interface WhisperSTTConfig {
   apiKey: string;
   endpointUrl?: string;
+  model?: string;
   defaultLanguage?: string;
   timeoutMs?: number;
 }
@@ -17,12 +18,14 @@ export interface WhisperSTTConfig {
 export class WhisperSTTProvider implements STTProvider {
   private readonly apiKey: string;
   private readonly endpointUrl: string;
+  private readonly model: string;
   private readonly defaultLanguage: string;
   private readonly timeoutMs: number;
 
   constructor(config: WhisperSTTConfig) {
     this.apiKey = config.apiKey;
-    this.endpointUrl = config.endpointUrl || 'https://api.openai.com/v1/audio/transcriptions';
+    this.endpointUrl = config.endpointUrl || 'https://api.groq.com/openai/v1/audio/transcriptions';
+    this.model = config.model || (this.endpointUrl.includes('groq') ? 'whisper-large-v3-turbo' : 'whisper-1');
     this.defaultLanguage = config.defaultLanguage || 'en';
     this.timeoutMs = config.timeoutMs || 45000;
   }
@@ -42,10 +45,22 @@ export class WhisperSTTProvider implements STTProvider {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
+    let filename = audio.filename || 'recording.wav';
+    const lowerMime = audio.mimeType.toLowerCase();
+    if (lowerMime.includes('webm') && !filename.endsWith('.webm')) {
+      filename = 'recording.webm';
+    } else if (lowerMime.includes('mp4') && !filename.endsWith('.mp4')) {
+      filename = 'recording.mp4';
+    } else if (lowerMime.includes('ogg') && !filename.endsWith('.ogg')) {
+      filename = 'recording.ogg';
+    } else if (lowerMime.includes('wav') && !filename.endsWith('.wav')) {
+      filename = 'recording.wav';
+    }
+
     const formData = new FormData();
     const blob = new Blob([audio.buffer], { type: audio.mimeType });
-    formData.append('file', blob, audio.filename || 'recording.wav');
-    formData.append('model', 'whisper-1');
+    formData.append('file', blob, filename);
+    formData.append('model', this.model);
     formData.append('language', options?.language || this.defaultLanguage);
     formData.append('response_format', 'verbose_json');
 
