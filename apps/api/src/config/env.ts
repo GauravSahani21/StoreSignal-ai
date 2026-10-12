@@ -9,14 +9,19 @@ export const EnvSchema = z.object({
     .min(1, 'DATABASE_URL is required')
     .default('postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev'),
 
-  // Phase 2: OpenRouter Gateway Configuration
+  // NVIDIA NIM Gateway Configuration (Primary)
+  NVIDIA_API_KEY: z.string().optional(),
+  NVIDIA_BASE_URL: z.string().url().default('https://integrate.api.nvidia.com/v1'),
+  NVIDIA_MODEL: z.string().default('meta/llama-3.2-11b-vision-instruct'),
+
+  // OpenRouter Gateway Configuration (Alternative / Fallback)
   OPENROUTER_API_KEY: z.string().optional(),
   OPENROUTER_BASE_URL: z.string().url().default('https://openrouter.ai/api/v1'),
   OPENROUTER_MODEL: z.string().default('google/gemini-2.0-flash-001'),
   OPENROUTER_FALLBACK_MODEL: z.string().optional(),
   OPENROUTER_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120000).default(30000),
 
-  // Phase 4: Speech-to-Text Configuration
+  // Speech-to-Text Configuration
   STT_PROVIDER: z.enum(['whisper', 'mock']).default('mock'),
   STT_API_KEY: z.string().optional(),
   STT_DEFAULT_LANGUAGE: z.string().default('en'),
@@ -43,9 +48,42 @@ export class EnvValidationError extends Error {
 
 let cachedEnv: EnvConfig | null = null;
 
+function normalizeEnvSource(source: Record<string, unknown>): Record<string, unknown> {
+  const normalized = { ...source };
+
+  // First-class NVIDIA API Key
+  if (typeof normalized.NVIDIA_API_KEY === 'string' && normalized.NVIDIA_API_KEY.trim()) {
+    if (!normalized.OPENROUTER_API_KEY) {
+      normalized.OPENROUTER_API_KEY = normalized.NVIDIA_API_KEY;
+    }
+    if (!normalized.OPENROUTER_BASE_URL || normalized.OPENROUTER_BASE_URL === 'https://openrouter.ai/api/v1') {
+      normalized.OPENROUTER_BASE_URL = normalized.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1';
+    }
+    if (!normalized.OPENROUTER_MODEL || normalized.OPENROUTER_MODEL === 'google/gemini-2.0-flash-001') {
+      normalized.OPENROUTER_MODEL = normalized.NVIDIA_MODEL || 'meta/llama-3.2-11b-vision-instruct';
+    }
+  }
+
+  // OpenRouter key starting with nvapi- (NVIDIA key provided via OPENROUTER_API_KEY)
+  if (typeof normalized.OPENROUTER_API_KEY === 'string' && normalized.OPENROUTER_API_KEY.startsWith('nvapi-')) {
+    if (!normalized.NVIDIA_API_KEY) {
+      normalized.NVIDIA_API_KEY = normalized.OPENROUTER_API_KEY;
+    }
+    if (!normalized.OPENROUTER_BASE_URL || normalized.OPENROUTER_BASE_URL === 'https://openrouter.ai/api/v1') {
+      normalized.OPENROUTER_BASE_URL = 'https://integrate.api.nvidia.com/v1';
+    }
+    if (!normalized.OPENROUTER_MODEL || normalized.OPENROUTER_MODEL === 'google/gemini-2.0-flash-001') {
+      normalized.OPENROUTER_MODEL = 'meta/llama-3.2-11b-vision-instruct';
+    }
+  }
+
+  return normalized;
+}
+
 export function loadEnv(customSource?: Record<string, unknown>): EnvConfig {
   if (customSource) {
-    const result = EnvSchema.safeParse(customSource);
+    const normalized = normalizeEnvSource(customSource);
+    const result = EnvSchema.safeParse(normalized);
     if (!result.success) {
       throw new EnvValidationError(result.error.issues);
     }
@@ -68,16 +106,7 @@ export function loadEnv(customSource?: Record<string, unknown>): EnvConfig {
     }
   }
 
-  const rawEnv: Record<string, unknown> = { ...process.env };
-  // If API key starts with nvapi- and no base URL was explicitly configured, use NVIDIA API endpoint
-  if (typeof rawEnv.OPENROUTER_API_KEY === 'string' && rawEnv.OPENROUTER_API_KEY.startsWith('nvapi-')) {
-    if (!rawEnv.OPENROUTER_BASE_URL) {
-      rawEnv.OPENROUTER_BASE_URL = 'https://integrate.api.nvidia.com/v1';
-    }
-    if (!rawEnv.OPENROUTER_MODEL || rawEnv.OPENROUTER_MODEL === 'google/gemini-2.0-flash-001') {
-      rawEnv.OPENROUTER_MODEL = 'meta/llama-3.2-11b-vision-instruct';
-    }
-  }
+  const rawEnv = normalizeEnvSource(process.env as Record<string, unknown>);
 
   const result = EnvSchema.safeParse(rawEnv);
   if (!result.success) {

@@ -63,6 +63,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
               '*.token',
               '*.password',
               '*.secret',
+              'NVIDIA_API_KEY',
               'OPENROUTER_API_KEY',
               'STT_API_KEY',
             ],
@@ -150,10 +151,10 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
   const aiProvider =
     options.aiProvider ??
     new OpenRouterProvider({
-      apiKey: env.OPENROUTER_API_KEY,
-      baseUrl: env.OPENROUTER_BASE_URL,
+      apiKey: env.NVIDIA_API_KEY || env.OPENROUTER_API_KEY,
+      baseUrl: env.NVIDIA_API_KEY ? env.NVIDIA_BASE_URL : env.OPENROUTER_BASE_URL,
       appUrl: env.APP_URL,
-      model: env.OPENROUTER_MODEL,
+      model: env.NVIDIA_API_KEY ? env.NVIDIA_MODEL : env.OPENROUTER_MODEL,
       fallbackModel: env.OPENROUTER_FALLBACK_MODEL,
       timeoutMs: env.OPENROUTER_TIMEOUT_MS,
     });
@@ -181,7 +182,7 @@ export async function buildApp(options: AppOptions = {}): Promise<FastifyInstanc
 
   // Register routes
   await app.register(healthRoutes);
-  await app.register(aiRoutes, { aiProvider });
+  await app.register(aiRoutes, { aiProvider, env });
   await app.register(consentRoutes, { repositories });
   await app.register(conversationRoutes, { repositories });
   await app.register(audioRoutes, {

@@ -58,7 +58,7 @@ export class OpenRouterProvider implements AIProvider {
   async generate(request: AIRequest): Promise<AIResponse> {
     if (!this.apiKey && !this.client) {
       throw new AINotConfiguredError(
-        'The OpenRouter AI gateway is not configured with OPENROUTER_API_KEY. Please provide a valid key.'
+        'The AI gateway is not configured with NVIDIA_API_KEY or OPENROUTER_API_KEY. Please provide a valid key.'
       );
     }
 

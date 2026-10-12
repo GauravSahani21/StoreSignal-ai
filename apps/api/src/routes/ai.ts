@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
+import type { EnvConfig } from '../config/env.js';
 import { ValidationError } from '../errors/AppError.js';
 import type { AIProvider } from '../providers/ai/types.js';
 
@@ -16,10 +17,11 @@ const ChatRequestSchema = z.object({
 
 export interface AiRoutesOptions {
   aiProvider: AIProvider;
+  env?: EnvConfig;
 }
 
 export const aiRoutes: FastifyPluginAsync<AiRoutesOptions> = async (fastify, options) => {
-  const { aiProvider } = options;
+  const { aiProvider, env } = options;
 
   // Single conversational gateway test endpoint
   fastify.post(
@@ -53,8 +55,12 @@ export const aiRoutes: FastifyPluginAsync<AiRoutesOptions> = async (fastify, opt
 
   // Dedicated connectivity status endpoint (separate from /health)
   fastify.get('/api/ai/health', async (_request, reply) => {
+    const isNvidia = Boolean(
+      env?.NVIDIA_API_KEY ||
+      env?.OPENROUTER_API_KEY?.startsWith('nvapi-')
+    );
     return reply.status(200).send({
-      provider: 'openrouter',
+      provider: isNvidia ? 'nvidia' : 'openrouter',
       status: 'configured',
       timestamp: new Date().toISOString(),
     });

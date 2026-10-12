@@ -239,4 +239,40 @@ describe('POST /api/ai/chat and GET /api/ai/health Endpoints', () => {
 
     await app.close();
   });
+
+  it('GET /api/ai/health reports provider as nvidia when NVIDIA_API_KEY is configured', async () => {
+    const nvidiaEnv = loadEnv({
+      NODE_ENV: 'test',
+      APP_URL: 'http://localhost:5173',
+      DATABASE_URL: 'postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev',
+      NVIDIA_API_KEY: 'nvapi-mock-key',
+    });
+
+    const mockAiProvider: AIProvider = {
+      generate: async () => ({
+        content: 'ok',
+        model: 'meta/llama-3.2-11b-vision-instruct',
+        finishReason: 'stop',
+        usage: null,
+        latencyMs: 1,
+      }),
+      stream: () => {
+        throw new Error();
+      },
+      generateWithTools: async () => {
+        throw new Error();
+      },
+    };
+
+    const app = await buildApp({ env: nvidiaEnv, logger: false, aiProvider: mockAiProvider });
+
+    const aiHealthRes = await app.inject({
+      method: 'GET',
+      url: '/api/ai/health',
+    });
+    expect(aiHealthRes.statusCode).toBe(200);
+    expect(JSON.parse(aiHealthRes.payload).provider).toBe('nvidia');
+
+    await app.close();
+  });
 });

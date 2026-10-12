@@ -49,4 +49,34 @@ describe('Environment Configuration Loader', () => {
       expect(envErr.missingOrInvalidFields).toContain('APP_URL');
     }
   });
+
+  it('normalizes first-class NVIDIA_API_KEY to configure NVIDIA endpoint and default model', () => {
+    const config = loadEnv({
+      NODE_ENV: 'test',
+      APP_URL: 'http://localhost:5173',
+      DATABASE_URL: 'postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev',
+      NVIDIA_API_KEY: 'nvapi-test-key-123',
+    });
+
+    expect(config.NVIDIA_API_KEY).toBe('nvapi-test-key-123');
+    expect(config.NVIDIA_BASE_URL).toBe('https://integrate.api.nvidia.com/v1');
+    expect(config.NVIDIA_MODEL).toBe('meta/llama-3.2-11b-vision-instruct');
+    expect(config.OPENROUTER_API_KEY).toBe('nvapi-test-key-123');
+    expect(config.OPENROUTER_BASE_URL).toBe('https://integrate.api.nvidia.com/v1');
+    expect(config.OPENROUTER_MODEL).toBe('meta/llama-3.2-11b-vision-instruct');
+  });
+
+  it('normalizes nvapi- prefixed OPENROUTER_API_KEY to NVIDIA gateway', () => {
+    const config = loadEnv({
+      NODE_ENV: 'test',
+      APP_URL: 'http://localhost:5173',
+      DATABASE_URL: 'postgresql://storesignal:storesignal_dev_pwd@localhost:5432/storesignal_dev',
+      OPENROUTER_API_KEY: 'nvapi-legacy-key-456',
+    });
+
+    expect(config.NVIDIA_API_KEY).toBe('nvapi-legacy-key-456');
+    expect(config.OPENROUTER_BASE_URL).toBe('https://integrate.api.nvidia.com/v1');
+    expect(config.OPENROUTER_MODEL).toBe('meta/llama-3.2-11b-vision-instruct');
+  });
 });
+
