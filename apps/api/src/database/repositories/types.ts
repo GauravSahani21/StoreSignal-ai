@@ -402,6 +402,22 @@ export interface AgentActivityMetrics {
   p95LatencyMs: number;
   totalTokens: number;
   totalCostUsd: number;
+  overallCostUsd?: number;
+  agents?: Record<
+    string,
+    {
+      invocations: number;
+      successful: number;
+      failed: number;
+      successRatePercentage: number;
+      p50LatencyMs: number;
+      p95LatencyMs: number;
+      totalPromptTokens: number;
+      totalCompletionTokens: number;
+      totalTokens: number;
+      totalCostUsd: number;
+    }
+  >;
   sampleSize: number;
 }
 

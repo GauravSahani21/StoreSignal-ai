@@ -455,6 +455,8 @@ export class StoreAnalyticsService {
     });
 
     const invocationsByAgent: AgentActivityMetrics['invocationsByAgent'] = {};
+    const agents: NonNullable<AgentActivityMetrics['agents']> = {};
+    const agentLatencies: Record<string, number[]> = {};
     let totalTokens = 0;
     let totalCostCents = 0;
     const latencies: number[] = [];
@@ -464,6 +466,11 @@ export class StoreAnalyticsService {
       totalCostCents += u.costCents || 0;
       latencies.push(u.latencyMs);
 
+      if (!agentLatencies[u.agent]) {
+        agentLatencies[u.agent] = [];
+      }
+      agentLatencies[u.agent]!.push(u.latencyMs);
+
       const current = invocationsByAgent[u.agent] || {
         count: 0,
         successCount: 0,
@@ -471,9 +478,29 @@ export class StoreAnalyticsService {
         avgLatencyMs: 0,
       };
       current.count++;
-      current.successCount++; // logged usage events represent completed invocations
+      current.successCount++;
       current.avgLatencyMs += u.latencyMs;
       invocationsByAgent[u.agent] = current;
+
+      const agt = agents[u.agent] || {
+        invocations: 0,
+        successful: 0,
+        failed: 0,
+        successRatePercentage: 100,
+        p50LatencyMs: 0,
+        p95LatencyMs: 0,
+        totalPromptTokens: 0,
+        totalCompletionTokens: 0,
+        totalTokens: 0,
+        totalCostUsd: 0,
+      };
+      agt.invocations++;
+      agt.successful++;
+      agt.totalPromptTokens += u.promptTokens || 0;
+      agt.totalCompletionTokens += u.completionTokens || 0;
+      agt.totalTokens += u.totalTokens || 0;
+      agt.totalCostUsd += Number(((u.costCents || 0) / 100).toFixed(4));
+      agents[u.agent] = agt;
     }
 
     for (const agent of Object.keys(invocationsByAgent)) {
@@ -483,19 +510,32 @@ export class StoreAnalyticsService {
       }
     }
 
+    for (const [agent, lats] of Object.entries(agentLatencies)) {
+      lats.sort((a, b) => a - b);
+      const agt = agents[agent];
+      if (agt && lats.length > 0) {
+        agt.p50LatencyMs = lats[Math.floor(lats.length * 0.5)] ?? 0;
+        agt.p95LatencyMs = lats[Math.floor(lats.length * 0.95)] ?? 0;
+        agt.totalCostUsd = Number(agt.totalCostUsd.toFixed(4));
+      }
+    }
+
     latencies.sort((a, b) => a - b);
     const p95Index = Math.floor(latencies.length * 0.95);
     const p95LatencyMs = latencies.length > 0 ? (latencies[p95Index] ?? 0) : 0;
     const avgLatencyMs = latencies.length > 0 ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : 0;
+    const totalCostUsd = Number((totalCostCents / 100).toFixed(4));
 
     return {
       totalInvocations: usage.length,
       invocationsByAgent,
+      agents,
       overallSuccessRate: usage.length > 0 ? 100 : 0,
       avgLatencyMs,
       p95LatencyMs,
       totalTokens,
-      totalCostUsd: Number((totalCostCents / 100).toFixed(4)),
+      totalCostUsd,
+      overallCostUsd: totalCostUsd,
       sampleSize: usage.length,
     };
   }

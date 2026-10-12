@@ -148,6 +148,7 @@ export interface AgentActivityMetrics {
   >;
   totalInvocations: number;
   overallCostUsd: number;
+  totalCostUsd?: number;
 }
 
 export interface FollowUpQueueMetrics {
@@ -562,12 +563,12 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                   <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                     <span className="text-xs font-semibold text-slate-300">Showroom Dialogue Transcript</span>
                     <span className="text-[11px] font-mono text-slate-400">
-                      {conversationDetails.transcript.segments.length} turns
+                      {conversationDetails.transcript?.segments?.length ?? 0} turns
                     </span>
                   </div>
 
                   <div className="space-y-3">
-                    {conversationDetails.transcript.segments.map((seg) => {
+                    {(conversationDetails.transcript?.segments ?? []).map((seg) => {
                       const isAdvisor = seg.speaker.toLowerCase() === 'advisor';
                       return (
                         <div
@@ -614,7 +615,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                   </div>
 
                   {/* Detected Questions */}
-                  {conversationDetails.intelligence.questionsDetected.length > 0 && (
+                  {(conversationDetails.intelligence.questionsDetected?.length ?? 0) > 0 && (
                     <div className="space-y-1.5">
                       <span className="text-[11px] font-semibold uppercase text-slate-400 flex items-center gap-1.5">
                         <MessageSquare className="w-3 h-3 text-blue-400" />
@@ -626,7 +627,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                             key={idx}
                             className="p-2 rounded-lg bg-blue-950/20 border border-blue-800/40 text-blue-200 text-[11px]"
                           >
-                            &ldquo;{q}&rdquo;
+                            &ldquo;{typeof q === 'string' ? q : (q as { question?: string }).question || JSON.stringify(q)}&rdquo;
                           </div>
                         ))}
                       </div>
@@ -634,7 +635,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                   )}
 
                   {/* Objections with Quote Evidence */}
-                  {conversationDetails.intelligence.objectionsIdentified.length > 0 && (
+                  {(conversationDetails.intelligence.objectionsIdentified?.length ?? 0) > 0 && (
                     <div className="space-y-1.5">
                       <span className="text-[11px] font-semibold uppercase text-slate-400 flex items-center gap-1.5">
                         <AlertTriangle className="w-3 h-3 text-amber-400" />
@@ -642,58 +643,65 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                         {conversationDetails.intelligence.objectionsIdentified.length})
                       </span>
                       <div className="space-y-1.5">
-                        {conversationDetails.intelligence.objectionsIdentified.map((obj, idx) => (
-                          <div
-                            key={idx}
-                            className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/40 space-y-1 text-[11px]"
-                          >
-                            <div className="font-semibold text-amber-300 uppercase tracking-wider text-[10px]">
-                              Type: {obj.type}
+                        {conversationDetails.intelligence.objectionsIdentified.map((obj, idx) => {
+                          const o = obj as { type?: string; objectionType?: string; quote?: string; customerQuote?: string };
+                          return (
+                            <div
+                              key={idx}
+                              className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-800/40 space-y-1 text-[11px]"
+                            >
+                              <div className="font-semibold text-amber-300 uppercase tracking-wider text-[10px]">
+                                Type: {o.objectionType || o.type || 'General'}
+                              </div>
+                              <blockquote className="text-slate-300 italic">
+                                &ldquo;{o.customerQuote || o.quote || ''}&rdquo;
+                              </blockquote>
                             </div>
-                            <blockquote className="text-slate-300 italic">
-                              &ldquo;{obj.quote}&rdquo;
-                            </blockquote>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
 
                   {/* FloorCoach Guidance & Grounding */}
-                  {conversationDetails.intelligence.suggestedResponses.length > 0 && (
+                  {(conversationDetails.intelligence.suggestedResponses?.length ?? 0) > 0 && (
                     <div className="space-y-1.5">
                       <span className="text-[11px] font-semibold uppercase text-slate-400 flex items-center gap-1.5">
                         <Sparkles className="w-3 h-3 text-indigo-400" />
                         FloorCoach Real-Time Recommendations
                       </span>
                       <div className="space-y-2">
-                        {conversationDetails.intelligence.suggestedResponses.map((r, idx) => (
-                          <div
-                            key={idx}
-                            className="p-2.5 rounded-lg bg-indigo-950/20 border border-indigo-800/40 space-y-1 text-[11px]"
-                          >
-                            <div className="font-semibold text-indigo-300">{r.topic}</div>
-                            <p className="text-slate-200">{r.guidance}</p>
-                            {r.factsUsed.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {r.factsUsed.map((fact, fIdx) => (
-                                  <span
-                                    key={fIdx}
-                                    className="px-1.5 py-0.5 rounded text-[9px] bg-indigo-900/40 text-indigo-300 border border-indigo-700/50"
-                                  >
-                                    Fact: {fact}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                        {conversationDetails.intelligence.suggestedResponses.map((r, idx) => {
+                          const item = r as { topic?: string; guidance?: string; response?: string; factsUsed?: string[]; citedChunks?: string[] };
+                          const facts = item.factsUsed || item.citedChunks || [];
+                          return (
+                            <div
+                              key={idx}
+                              className="p-2.5 rounded-lg bg-indigo-950/20 border border-indigo-800/40 space-y-1 text-[11px]"
+                            >
+                              <div className="font-semibold text-indigo-300">{item.topic}</div>
+                              <p className="text-slate-200">{item.guidance || item.response}</p>
+                              {facts.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {facts.map((fact, fIdx) => (
+                                    <span
+                                      key={fIdx}
+                                      className="px-1.5 py-0.5 rounded text-[9px] bg-indigo-900/40 text-indigo-300 border border-indigo-700/50"
+                                    >
+                                      Fact: {fact}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
 
                   {/* Contributing Rubric Signals */}
-                  {conversationDetails.intelligence.contributingSignals.length > 0 && (
+                  {(conversationDetails.intelligence.contributingSignals?.length ?? 0) > 0 && (
                     <div className="space-y-1.5">
                       <span className="text-[11px] font-semibold uppercase text-slate-400">
                         Contributing Scoring Signals
@@ -864,13 +872,13 @@ export const RetailAnalyticsDashboard: React.FC = () => {
               </div>
 
               {/* Top Products */}
-              {shopperInsights.topProductInterests.length > 0 && (
+              {(shopperInsights.topProductInterests?.length ?? 0) > 0 && (
                 <div className="pt-2 space-y-1.5">
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">
                     Top Inquired Vehicles
                   </span>
                   <div className="space-y-1">
-                    {shopperInsights.topProductInterests.slice(0, 3).map((p, idx) => (
+                    {(shopperInsights.topProductInterests ?? []).slice(0, 3).map((p, idx) => (
                       <div key={idx} className="flex items-center justify-between text-[11px]">
                         <span className="text-slate-300 truncate">{p.name}</span>
                         <span className="font-mono text-slate-400 ml-2">{p.count} inquiries</span>
@@ -962,9 +970,9 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">
                   Frequent Objections Detected
                 </span>
-                {storeInsights.frequentObjections.length > 0 ? (
+                {(storeInsights.frequentObjections?.length ?? 0) > 0 ? (
                   <div className="space-y-1.5">
-                    {storeInsights.frequentObjections.map((obj, idx) => (
+                    {(storeInsights.frequentObjections ?? []).map((obj, idx) => (
                       <div
                         key={idx}
                         className="p-2 rounded-xl bg-slate-950 border border-slate-800 space-y-1 text-[11px]"
@@ -973,7 +981,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                           <span>{obj.type}</span>
                           <span className="font-mono text-slate-400">{obj.count} occurrences</span>
                         </div>
-                        <p className="text-slate-400 italic text-[10px] truncate">&ldquo;{obj.sampleQuote}&rdquo;</p>
+                        <p className="text-slate-400 italic text-[10px] truncate">&ldquo;{obj.sampleQuote || ''}&rdquo;</p>
                       </div>
                     ))}
                   </div>
@@ -987,7 +995,7 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">
                   Missed Conversion Reasons
                 </span>
-                {storeInsights.missedConversionReasons.length > 0 ? (
+                {(storeInsights.missedConversionReasons?.length ?? 0) > 0 ? (
                   <div className="space-y-1">
                     {storeInsights.missedConversionReasons.map((m, idx) => (
                       <div
@@ -1022,13 +1030,13 @@ export const RetailAnalyticsDashboard: React.FC = () => {
               </p>
             </div>
             <div className="text-xs font-mono text-slate-400">
-              Total Invocations: <strong className="text-slate-200">{agentActivity.totalInvocations}</strong> | Total Cost:{' '}
-              <strong className="text-emerald-400">${agentActivity.overallCostUsd.toFixed(4)}</strong>
+              Total Invocations: <strong className="text-slate-200">{agentActivity.totalInvocations ?? 0}</strong> | Total Cost:{' '}
+              <strong className="text-emerald-400">${(agentActivity.overallCostUsd ?? agentActivity.totalCostUsd ?? 0).toFixed(4)}</strong>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.entries(agentActivity.agents).map(([agentName, metrics]) => (
+            {Object.entries(agentActivity.agents ?? {}).map(([agentName, metrics]) => (
               <div
                 key={agentName}
                 className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2.5 text-xs font-mono"
@@ -1038,30 +1046,30 @@ export const RetailAnalyticsDashboard: React.FC = () => {
                     {agentName.replace('_', ' ')}
                   </span>
                   <span className="px-1.5 py-0.2 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    {metrics.successRatePercentage}% pass
+                    {metrics?.successRatePercentage ?? 100}% pass
                   </span>
                 </div>
 
                 <div className="space-y-1 text-[11px] text-slate-300">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Invocations:</span>
-                    <span>{metrics.invocations}</span>
+                    <span>{metrics?.invocations ?? 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">p50 / p95 Latency:</span>
                     <span>
-                      {metrics.p50LatencyMs}ms / {metrics.p95LatencyMs}ms
+                      {metrics?.p50LatencyMs ?? 0}ms / {metrics?.p95LatencyMs ?? 0}ms
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Prompt / Comp Tokens:</span>
                     <span>
-                      {metrics.totalPromptTokens} / {metrics.totalCompletionTokens}
+                      {metrics?.totalPromptTokens ?? 0} / {metrics?.totalCompletionTokens ?? 0}
                     </span>
                   </div>
                   <div className="flex justify-between font-bold text-emerald-400 pt-1 border-t border-slate-900">
                     <span className="text-slate-500 font-normal">Agent Cost:</span>
-                    <span>${metrics.totalCostUsd.toFixed(4)}</span>
+                    <span>${(metrics?.totalCostUsd ?? 0).toFixed(4)}</span>
                   </div>
                 </div>
               </div>
